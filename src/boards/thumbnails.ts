@@ -31,7 +31,7 @@ export async function uploadThumbnail(client: SupabaseClient, ownerId: string, b
   if (error) throw new Error(error.message)
 }
 
-const SignedSchema = z.array(z.object({ path: z.string().nullable(), signedUrl: z.string().optional() }))
+const SignedSchema = z.array(z.object({ path: z.string().nullable(), signedUrl: z.string().nullish() }))
 
 /** Signed URLs (1 hour) for the given boards; boards without a thumbnail are simply absent from the map. */
 export async function thumbnailUrls(client: SupabaseClient, ownerId: string, boardIds: string[]): Promise<Map<string, string>> {
@@ -40,7 +40,9 @@ export async function thumbnailUrls(client: SupabaseClient, ownerId: string, boa
   const paths = boardIds.map((id) => thumbnailPath(ownerId, id))
   const { data, error } = await client.storage.from(THUMB_BUCKET).createSignedUrls(paths, 3600)
   if (error) return out
-  const rows = SignedSchema.parse(data)
+  const parsed = SignedSchema.safeParse(data)
+  if (!parsed.success) return out
+  const rows = parsed.data
   rows.forEach((r, i) => {
     const id = boardIds[i]
     if (id && r.path && r.signedUrl) out.set(id, r.signedUrl)
