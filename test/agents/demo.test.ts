@@ -16,11 +16,18 @@ describe('demo board fixture', () => {
     expect(probed.length).toBeGreaterThan(0) // only the injected fake resolver ran
     expect(res.warnings).toEqual([])
   })
-  it('is sourced, image-free and neutral', () => {
+  it('is sourced, neutral, and only images are licensed Commons files', () => {
+    let images = 0
     for (const w of DEMO_DOC.widgets) {
       expect(w.sources.length).toBeGreaterThan(0)
-      expect('image' in w.data).toBe(false)
+      if ('image' in w.data) {
+        images++
+        expect(w.type).toBe('photo')
+        expect(w.data.image).toMatch(/^https:\/\/upload\.wikimedia\.org\//)
+        expect(w.sources.some((s) => s.url.startsWith('https://commons.wikimedia.org/wiki/File:') && /^(Public domain|CC BY)/.test(s.license ?? '') && s.attribution)).toBe(true)
+      }
     }
+    expect(images).toBe(2)
     expect(`${DEMO_TITLE}\n${JSON.stringify(DEMO_DOC)}`).not.toMatch(BANNED)
   })
   it('writes through writeDraft as a private row', async () => {
