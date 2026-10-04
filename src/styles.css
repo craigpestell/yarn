@@ -76,6 +76,8 @@ button, select, input, textarea { font: inherit; }
 /* Auth, boards grid */
 .page { max-width: 1100px; margin: 0 auto; padding: 16px; }
 .page.narrow { max-width: 28rem; }
+.page.legal { max-width: 44rem; line-height: 1.55; }
+.page.legal h2 { margin-top: 1.4em; font-size: 1.15rem; }
 .muted { color: #57534e; }
 .navbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 6px 12px; background: #1c1917; }
 .navbar a, .navbar button { color: #fafaf9; background: none; border: 0; text-decoration: underline; cursor: pointer; padding: 0; }
