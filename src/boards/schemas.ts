@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { DocSchema } from '../../shared/schema'
+import { SlugSchema } from '../links/schemas'
 
 export const VisibilitySchema = z.enum(['private', 'unlisted', 'public'])
 export type Visibility = z.infer<typeof VisibilitySchema>
@@ -23,3 +24,6 @@ export const BOARD_FULL_COLUMNS = `${BOARD_SUMMARY_COLUMNS}, doc`
 
 /** save_board returns the new revision, or null when the revision is stale / not owned / deleted. */
 export const SaveResultSchema = z.number().int().nullable()
+
+/** fork_board returns exactly one row: the new board's id and slug. */
+export const ForkResultSchema = z.tuple([z.object({ new_id: z.uuid(), new_slug: SlugSchema })])

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
-import { OwnRowSchema, PublishedRowSchema, type ReaderBoard } from './schemas'
+import { ForkSourceRowSchema, OwnRowSchema, PublishedRowSchema, type ForkSource, type ReaderBoard } from './schemas'
 
 export class ReaderError extends Error {}
 
@@ -27,4 +27,17 @@ export async function loadReaderBoard(client: SupabaseClient, slug: string, sign
   const row = rows.data[0]
   if (!row || row.published_doc === null) return null
   return { id: row.id, slug: row.slug, title: row.title, doc: row.published_doc, isOwner: false }
+}
+
+/** Provenance of a fork: null when the board is not a fork. Unreadable sources come back without a title. */
+export async function fetchForkSource(client: SupabaseClient, boardId: string): Promise<ForkSource | null> {
+  const { data, error } = await client.rpc('get_fork_source', { p_board_id: boardId })
+  if (error) throw new ReaderError(`Could not load the fork source: ${error.message}`)
+  const rows = z.array(ForkSourceRowSchema).safeParse(data)
+  if (!rows.success) throw new ReaderError('Could not load the fork source: unexpected data')
+  const row = rows.data[0]
+  if (!row) return null
+  return row.source_slug !== null && row.source_title !== null
+    ? { kind: 'available', slug: row.source_slug, title: row.source_title }
+    : { kind: 'unavailable' }
 }
