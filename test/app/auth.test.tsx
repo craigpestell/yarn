@@ -164,6 +164,13 @@ describe('account deletion', () => {
   })
 })
 
+it('turns an OAuth error in the URL into a message', async () => {
+  const { oauthErrorFrom } = await import('../../src/auth/RequireAuth')
+  expect(oauthErrorFrom('?error=server_error&error_description=Unable+to+exchange+external+code', '')).toBe('Sign-in failed: Unable to exchange external code')
+  expect(oauthErrorFrom('', '#error=access_denied')).toBe('Sign-in failed: access_denied')
+  expect(oauthErrorFrom('?x=1', '')).toBeNull()
+})
+
 it('offers GitHub only when enabled', async () => {
   const { oauthProviders } = await import('../../src/auth/OAuthButtons')
   expect(oauthProviders(false).map((p) => p.id)).toEqual(['google'])

@@ -1,6 +1,6 @@
 # 001 Yarns v2 foundation
 
-Status: M1-M7 done (repo side). Outstanding: real Vercel deploy and post-deploy checklist, demo board publish, AC 22 real end-to-end agent run.
+Status: M1-M7 done. Deployed to Vercel (https://yarn-dun.vercel.app) with Supabase, Resend SMTP and Google login; the Dyatlov Pass demo board is published; AC 22 (agent run) passed locally with a private draft. Outstanding: Google consent screen set to In production, human check of the demo's source URLs, purge job for soft-deleted boards.
 Approved: 2026-10-03 (Gate 1). Scope of first build: M1-M2 only, then stop for review.
 
 ## Context

@@ -10,6 +10,11 @@ function redirectTarget(state: unknown): string {
   return typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') ? from : '/boards'
 }
 
+function oauthError(state: unknown): string | null {
+  const e = typeof state === 'object' && state !== null && 'authError' in state ? (state as { authError: unknown }).authError : null
+  return typeof e === 'string' && e ? e : null
+}
+
 export function LoginPage() {
   const { user, signIn, notice, clearNotice } = useAuth()
   // Show the one-off notice once, then clear it from the provider so it does not come back.
@@ -19,7 +24,7 @@ export function LoginPage() {
   }, [notice, clearNotice])
   const navigate = useNavigate()
   const location = useLocation()
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(oauthError(location.state))
   const [busy, setBusy] = useState(false)
   const target = redirectTarget(location.state)
 
