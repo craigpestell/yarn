@@ -125,3 +125,21 @@ describe('createClaudeLlm error results', () => {
     await expect(llm.complete({ stage: 'scout', prompt: 'p', system: 's', schema: z.object({}) } as never)).rejects.toThrow(/Not logged in/)
   })
 })
+
+describe('structured output fallback', () => {
+  it('parses JSON from result text, and errors with the text when there is none', async () => {
+    const { createClaudeLlm, parseJsonText } = await import('../../agents/lib/llm')
+    const { z } = await import('zod')
+    const { Budget } = await import('../../agents/lib/budget')
+    expect(parseJsonText('```json\n{"a":1}\n```')).toEqual({ a: 1 })
+    expect(parseJsonText('nope')).toBeUndefined()
+    const mk = (result: string) => (() => (async function* () {
+      yield { type: 'result', subtype: 'success', is_error: false, result, num_turns: 1, total_cost_usd: 0 }
+    })()) as never
+    const req = { stage: 'scout', prompt: 'p', system: 's', schema: z.object({ a: z.number() }) } as never
+    const ok = createClaudeLlm({ model: 'm', budget: new Budget({ maxTurns: 5, maxBudgetUsd: 1 }), query: mk('{"a":2}') })
+    await expect(ok.complete(req)).resolves.toEqual({ a: 2 })
+    const bad = createClaudeLlm({ model: 'm', budget: new Budget({ maxTurns: 5, maxBudgetUsd: 1 }), query: mk('I could not') })
+    await expect(bad.complete(req)).rejects.toThrow(/no structured output.*I could not/)
+  })
+})
