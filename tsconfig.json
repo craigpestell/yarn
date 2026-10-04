@@ -29,6 +29,8 @@
     "api",
     "test",
     "src",
-    "vite.config.ts"
+    "vite.config.ts",
+    "agents",
+    "scripts"
   ]
 }
