@@ -30,6 +30,12 @@ const SDK_ENV_ALLOW = [
   'HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY', 'https_proxy', 'http_proxy', 'no_proxy',
 ] as const
 
+/** The Claude Code CLI's validator cannot resolve the draft 2020-12 meta-schema zod emits by default, so emit draft-07 without the `$schema` key. */
+export function cliJsonSchema(schema: z.ZodType): Record<string, unknown> {
+  const { $schema: _omit, ...rest } = z.toJSONSchema(schema, { target: 'draft-7' }) as Record<string, unknown>
+  return rest
+}
+
 export function buildSdkEnv(source: NodeJS.ProcessEnv = process.env): Record<string, string> {
   const out: Record<string, string> = {}
   for (const k of SDK_ENV_ALLOW) {
@@ -122,7 +128,7 @@ export function createClaudeLlm({ model, budget, query = sdkQuery, env = process
           persistSession: false,
           maxTurns: caps.maxTurns,
           maxBudgetUsd: caps.maxBudgetUsd,
-          outputFormat: { type: 'json_schema', schema: z.toJSONSchema(req.schema) as Record<string, unknown> },
+          outputFormat: { type: 'json_schema', schema: cliJsonSchema(req.schema) },
         },
       })
       let structured: unknown
@@ -132,7 +138,7 @@ export function createClaudeLlm({ model, budget, query = sdkQuery, env = process
           if (msg.type !== 'result') continue
           budget.record(msg.num_turns, msg.total_cost_usd)
           if (msg.subtype === 'success' && !msg.is_error) structured = msg.structured_output
-          else failure = msg.subtype
+          else failure = msg.subtype === 'success' ? `error result: ${String(msg.result).slice(0, 200)}` : msg.subtype
         }
       } finally {
         rmSync(cwd, { recursive: true, force: true })
