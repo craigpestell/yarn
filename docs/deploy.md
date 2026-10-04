@@ -16,6 +16,10 @@
 | `SUPABASE_ANON_KEY` | function | OG function; falls back to `VITE_SUPABASE_ANON_KEY` |
 | `VITE_CONTACT_EMAIL` | build | copyright/takedown address shown in the footer; the footer line is hidden when unset |
 
+## Trash purge
+
+Migration `20261006000001_purge_trash.sql` schedules a pg_cron job (`purge-trashed-boards`, daily 04:00 UTC) that permanently deletes boards trashed more than 30 days ago; links, shares, invites and topic tags cascade. No secrets or Vercel config are involved. Known limit: Supabase Storage forbids deleting files from SQL, so those boards' thumbnail PNGs (at most 256 KB each) stay in the `thumbnails` bucket. Check the job with `select * from cron.job_run_details order by start_time desc limit 5;`.
+
 ## Supabase Auth (production project)
 
 - Site URL: the production origin (for example `https://<your-domain>`).
