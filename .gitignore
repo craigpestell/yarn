@@ -1,0 +1,7 @@
+node_modules
+dist
+test/fixtures/private
+.env
+.env.*
+agents/.env
+!.env.example
