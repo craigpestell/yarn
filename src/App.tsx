@@ -7,7 +7,7 @@ import { Toolbar } from './editor/Toolbar'
 import { useBoard } from './editor/store'
 import './styles.css'
 
-export function App({ nav, banner }: { nav?: ReactNode; banner?: ReactNode } = {}) {
+export function App({ nav, banner, tools }: { nav?: ReactNode; banner?: ReactNode; tools?: ReactNode } = {}) {
   const error = useBoard((s) => s.error)
   const clearError = useBoard((s) => s.clearError)
   const info = useBoard((s) => s.info)
@@ -28,6 +28,7 @@ export function App({ nav, banner }: { nav?: ReactNode; banner?: ReactNode } = {
         <header className="topbar">
           <TitleEdit />
           <Toolbar />
+          {tools}
         </header>
         {banner}
         {error && (

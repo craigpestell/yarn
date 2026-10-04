@@ -26,6 +26,7 @@
     "shared",
     "layout",
     "migrate",
+    "api",
     "test",
     "src",
     "vite.config.ts"

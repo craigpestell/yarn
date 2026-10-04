@@ -19,6 +19,7 @@ export function useServerBoard(boardId: string) {
   const [phase, setPhase] = useState<Phase>({ kind: 'loading' })
   const [status, setStatus] = useState<SaveStatus>({ kind: 'saved' })
   const [generation, setGeneration] = useState(0)
+  const [slug, setSlug] = useState<string | null>(null)
   useUnloadGuard(status)
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export function useServerBoard(boardId: string) {
           unregister()
           void save.stop().then(thumbs.stop)
         }
+        setSlug(board.slug)
         setPhase({ kind: 'ready' })
       } catch (e) {
         if (!cancelled) setPhase({ kind: 'error', message: e instanceof Error ? e.message : 'Could not load the board' })
@@ -65,5 +67,5 @@ export function useServerBoard(boardId: string) {
 
   /** Discard local edits and reload the server's version (also restarts autosave with the new revision). */
   const reloadFromServer = useCallback(() => setGeneration((g) => g + 1), [])
-  return { phase, status, reloadFromServer }
+  return { phase, status, reloadFromServer, slug }
 }

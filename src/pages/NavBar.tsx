@@ -34,6 +34,7 @@ export function NavBar() {
     <>
       <nav className="navbar" aria-label="Account">
         <Link to="/">Sandbox</Link>
+        <Link to="/topics">Topics</Link>
         {user ? (
           <>
             <Link to="/boards">My boards</Link>

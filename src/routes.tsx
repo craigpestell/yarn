@@ -3,6 +3,9 @@ import { RequireAuth } from './auth/RequireAuth'
 import { AccountPage } from './pages/AccountPage'
 import { BoardsPage } from './pages/BoardsPage'
 import { EditorPage } from './pages/EditorPage'
+import { ReaderPage } from './pages/ReaderPage'
+import { TopicPage } from './pages/TopicPage'
+import { TopicsPage } from './pages/TopicsPage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { ResetPage } from './pages/ResetPage'
@@ -17,6 +20,9 @@ export const routeObjects: RouteObject[] = [
   { path: '/boards', element: <RequireAuth><BoardsPage /></RequireAuth> },
   { path: '/account', element: <RequireAuth><AccountPage /></RequireAuth> },
   { path: '/edit/:id', element: <RequireAuth><EditorPage /></RequireAuth> },
+  { path: '/b/:slug', element: <ReaderPage /> },
+  { path: '/topics', element: <TopicsPage /> },
+  { path: '/topics/:slug', element: <TopicPage /> },
   { path: '*', element: <main className="page"><h1>Not found</h1><a href="/">Home</a></main> },
 ]
 
