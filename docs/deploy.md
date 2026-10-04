@@ -15,6 +15,12 @@
 | `SUPABASE_URL` | function | OG function; falls back to `VITE_SUPABASE_URL` |
 | `SUPABASE_ANON_KEY` | function | OG function; falls back to `VITE_SUPABASE_ANON_KEY` |
 | `VITE_CONTACT_EMAIL` | build | copyright/takedown address shown in the footer; the footer line is hidden when unset |
+| `SUPABASE_SERVICE_ROLE_KEY` | function (secret) | `api/purge.ts` only; bypasses RLS. Never `VITE_`-prefixed, never in the repo |
+| `CRON_SECRET` | function (secret) | any long random string; Vercel sends it as a Bearer token on cron calls, and the purge refuses everything without it |
+
+## Trash purge
+
+`vercel.json` runs `/api/purge` daily (04:00 UTC). It permanently deletes boards trashed more than 30 days ago (rows cascade to links, shares and topic tags) and removes their thumbnail files first; if the files cannot be removed the board is kept for the next run. It handles up to 100 boards per run. To run it by hand: `curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/purge`.
 
 ## Supabase Auth (production project)
 

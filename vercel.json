@@ -5,5 +5,8 @@
   ],
   "headers": [
     { "source": "/assets/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
+  ],
+  "crons": [
+    { "path": "/api/purge", "schedule": "0 4 * * *" }
   ]
 }
