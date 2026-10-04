@@ -1,6 +1,6 @@
 # 001 Yarns v2 foundation
 
-Status: ready-for-agent
+Status: done (M1-M2; M3-M7 pending)
 Approved: 2026-10-03 (Gate 1). Scope of first build: M1-M2 only, then stop for review.
 
 ## Context
@@ -172,3 +172,7 @@ Resolved at Gate 1 (defaults accepted):
 2. Demo topic: Dyatlov Pass incident, pending a sourcing check.
 3. Soft-delete retention: 30 days, then a scheduled purge.
 Also: board pages use `/b/:slug` for v1.
+
+## Notes
+
+2026-10-03: M1-M2 built, verified (typecheck, 52 vitest, 146 pgTAP on local Supabase) and validated (no Critical/Important). Migrations 000001-000002 applied to remote; 000003 (indexes, slug rules) committed but not yet pushed. Branch m1-m2-foundation.
