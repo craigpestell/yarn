@@ -28,3 +28,16 @@ describe('legal pages', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Terms of service' })).toBeInTheDocument()
   })
 })
+
+describe('site header', () => {
+  it('links back to the boards when signed in, and to login when not', async () => {
+    const { SiteHeader } = await import('../../src/pages/Footer')
+    const { MemoryRouter } = await import('react-router')
+    const { AuthProvider } = await import('../../src/auth/AuthProvider')
+    const out = render(<AuthProvider client={null}><MemoryRouter><SiteHeader /></MemoryRouter></AuthProvider>)
+    expect(screen.getByRole('link', { name: 'Yarns' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: 'Topics' })).toHaveAttribute('href', '/topics')
+    expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute('href', '/login')
+    out.unmount()
+  })
+})
