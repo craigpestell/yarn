@@ -9,7 +9,7 @@ const ADD_LABEL: Record<WidgetType, string> = {
   paper: 'Add paper',
 }
 
-function download(name: string, text: string) {
+export function download(name: string, text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }))
   const a = document.createElement('a')
   a.href = url

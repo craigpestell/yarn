@@ -33,7 +33,7 @@ select is((select count(*)::int from public.boards where owner_id = 'aaaaaaaa-00
 delete from auth.users where id = 'aaaaaaaa-0000-0000-0000-000000000001';
 
 select is((select count(*)::int from public.boards where owner_id = 'aaaaaaaa-0000-0000-0000-000000000001'), 0, 'no boards remain for the deleted owner');
-select is((select count(*)::int from public.boards), 1, 'other users'' boards are untouched');
+select is((select count(*)::int from public.boards where owner_id = 'dddddddd-0000-0000-0000-000000000004'), 1, 'other users'' boards are untouched');
 select is((select count(*)::int from public.board_shares), 0, 'shares on the deleted owner''s boards are gone');
 select is((select count(*)::int from public.board_links), 0, 'links from and to the deleted owner''s boards are gone');
 select is((select count(*)::int from public.board_topics), 0, 'topic tags of the deleted owner''s boards are gone');

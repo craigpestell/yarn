@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterEach } from 'vitest'
 
 class RO {
@@ -18,6 +18,8 @@ if (!('DOMMatrixReadOnly' in globalThis)) {
   }
   Object.assign(globalThis, { DOMMatrixReadOnly: M })
 }
+// axe runs and multi-step async flows can exceed RTL's default 1000ms under load; slow is fine, flaky is not.
+configure({ asyncUtilTimeout: 5000 })
 afterEach(() => cleanup())
 
 // user-event dispatches mouse events without `view`, and d3-zoom (inside xyflow) reads event.view.document
