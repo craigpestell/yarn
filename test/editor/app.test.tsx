@@ -81,7 +81,8 @@ describe('editor keyboard behaviour', () => {
   it('adding a widget opens the inspector', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('button', { name: 'Add note' }))
+    await user.click(screen.getByRole('button', { name: /^Add/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'Add note' }))
     expect(screen.getByRole('complementary', { name: 'Inspector' })).toBeInTheDocument()
     await user.type(screen.getByLabelText('Text'), 'hi')
     const sel = s().selection
@@ -161,7 +162,8 @@ describe('focus, notices and keyboard edge cases', () => {
   it('adding a widget focuses it; closing the inspector returns focus to the widget', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('button', { name: 'Add paper' }))
+    await user.click(screen.getByRole('button', { name: /^Add/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'Add paper' }))
     const id = s().selection?.id ?? ''
     await waitFor(() => expect(document.activeElement?.getAttribute('data-id')).toBe(id))
     await user.click(screen.getByRole('button', { name: 'Close' }))
@@ -170,7 +172,8 @@ describe('focus, notices and keyboard edge cases', () => {
   it('deleting from the inspector moves focus to the canvas', async () => {
     const user = userEvent.setup()
     const { container } = render(<App />)
-    await user.click(screen.getByRole('button', { name: 'Add note' }))
+    await user.click(screen.getByRole('button', { name: /^Add/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'Add note' }))
     await user.click(screen.getByRole('button', { name: 'Delete widget' }))
     await waitFor(() => expect(document.activeElement).toBe(container.querySelector('.canvas')))
   })
