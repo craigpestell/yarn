@@ -147,7 +147,7 @@ describe('runPipeline (fakes)', () => {
     expect((err as ValidationFailed).errors.some((e) => e.code === 'unresolvable_url')).toBe(true)
   })
 
-  it('refuses a news-photo hotlink from the model', async () => {
+  it('drops a news-photo hotlink from the model instead of failing', async () => {
     const base = fakeDeps()
     const llm = fakeLlm({
       researcher: {
@@ -155,7 +155,9 @@ describe('runPipeline (fakes)', () => {
         images: [{ entity: 'Tent', url: 'https://cdn.news.example/p.jpg', pageUrl: 'https://example.org/p', license: 'CC0', attribution: 'x' }],
       },
     })
-    await expect(runPipeline({ ...base, llm }, FIXTURE_TOPIC)).rejects.toThrow(/unlicensed_image/)
+    const out = await runPipeline({ ...base, llm }, FIXTURE_TOPIC)
+    expect(JSON.stringify(out.doc)).not.toContain('cdn.news.example')
+    expect(out.warnings.map((w) => w.code)).toContain('image_dropped')
   })
 
   it('seedFor is stable', () => {

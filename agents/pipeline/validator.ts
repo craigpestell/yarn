@@ -92,6 +92,7 @@ export async function validateBoard(input: unknown, opts: ValidateOptions): Prom
     else if (prev.kind === 'image' && t.kind === 'image') prev.refs.push(...t.refs)
   }
 
+  const dropped = new Set<number>()
   doc.widgets.forEach((w, i) => {
     const at = `widgets.${i}`
     if (w.sources.length === 0) errors.push({ code: 'ungrounded', path: `${at}.sources`, message: `widget ${w.id} has no source` })
@@ -101,21 +102,25 @@ export async function validateBoard(input: unknown, opts: ValidateOptions): Prom
     if (image === undefined) return
     const p = `${at}.data.image`
     const host = hostOf(image)
+    // An image that is not provably free is removed (never published) rather than failing the whole draft.
+    // Only photo and wanted widgets are valid without an image; anything else stays a hard error.
+    const reject = (message: string) => {
+      if (w.type === 'photo' || w.type === 'wanted') {
+        dropped.add(i)
+        warnings.push({ code: 'image_dropped', path: p, message: `image removed (unlicensed): ${message}` })
+      } else errors.push({ code: 'unlicensed_image', path: p, message })
+    }
     if (!host || !hosts.includes(host) || new URL(image).protocol !== 'https:' || new URL(image).port !== '') {
-      errors.push({ code: 'unlicensed_image', path: p, message: `image host not allowed (allowed: ${hosts.join(', ')})` })
+      reject(`image host not allowed (allowed: ${hosts.join(', ')})`)
       return
     }
     if (!w.sources.some(isLicenseSource)) {
-      errors.push({
-        code: 'unlicensed_image',
-        path: p,
-        message: `image needs a ${LICENSE_HOST} source (https) with an accepted licence and attribution`,
-      })
+      reject(`image needs a ${LICENSE_HOST} source (https) with an accepted licence and attribution`)
+      return
     }
     add({ url: image, path: p, kind: 'image', refs: [{ widget: i, path: p }] })
   })
 
-  const dropped = new Set<number>()
   await pool([...targets.values()], PROBE_CONCURRENCY, async (t) => {
     const problem = !isPublicHttpsUrl(t.url) ? 'unsafe_url' : (await opts.resolver(t.url)) ? null : 'unresolvable_url'
     if (!problem) return
