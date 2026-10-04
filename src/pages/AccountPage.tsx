@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthProvider'
 import { ErrorScope, Field, FormAlert } from '../auth/Field'
-import { NavBar } from './NavBar'
 
 export function AccountPage() {
   const { user, deleteAccount } = useAuth()
@@ -22,7 +21,6 @@ export function AccountPage() {
 
   return (
     <>
-      <NavBar />
       <main className="page narrow">
         <h1>Account</h1>
         <p>Signed in as <strong>{email}</strong></p>

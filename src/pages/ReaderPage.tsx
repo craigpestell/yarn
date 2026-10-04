@@ -10,7 +10,6 @@ import { resolveTrail, type TrailEntry } from '../links/trail'
 import { loadReaderBoard } from '../reader/api'
 import { ReadOnlyCanvas } from '../reader/ReadOnlyCanvas'
 import type { ReaderBoard } from '../reader/schemas'
-import { NavBar } from './NavBar'
 
 type State = { kind: 'loading' } | { kind: 'missing' } | { kind: 'error'; message: string } | { kind: 'ready'; board: ReaderBoard }
 
@@ -59,7 +58,6 @@ export function ReaderPage() {
   if (state.kind !== 'ready') {
     return (
       <>
-        <NavBar />
         <main className="page">
           {!slugValue || state.kind === 'missing' ? (
             <><h1>Board not found</h1><p role="alert">There is no board here, or you do not have access to it.</p></>
@@ -74,7 +72,6 @@ export function ReaderPage() {
   }
   return (
     <div className="app">
-      <NavBar />
       <header className="topbar reader-head">
         <h1 className="title">{state.board.title}</h1>
         {state.board.isOwner && <Link to={`/edit/${state.board.id}`}>Edit this board</Link>}

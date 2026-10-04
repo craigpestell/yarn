@@ -33,11 +33,11 @@ export function NavBar() {
   return (
     <>
       <nav className="navbar" aria-label="Account">
-        <Link to="/">Sandbox</Link>
+        <Link to={user ? '/boards' : '/'} className="site-brand">Yarns</Link>
+        {user && <Link to="/boards">My boards</Link>}
         <Link to="/topics">Topics</Link>
         {user ? (
           <>
-            <Link to="/boards">My boards</Link>
             <Link to="/account">Account</Link>
             <button type="button" disabled={busy} aria-busy={busy} onClick={() => void onLogout()}>
               {busy ? 'Saving...' : 'Log out'}

@@ -3,7 +3,6 @@ import { Link } from 'react-router'
 import { useAuth } from '../auth/AuthProvider'
 import { searchTopics } from '../topics/api'
 import type { Topic } from '../topics/schemas'
-import { NavBar } from './NavBar'
 
 /** Browse and search topics. Public: works without an account. */
 export function TopicsPage() {
@@ -36,7 +35,6 @@ export function TopicsPage() {
   }
   return (
     <>
-      <NavBar />
       <main className="page">
         <h1>Topics</h1>
         <form role="search" className="rename-form" onSubmit={onSubmit}>

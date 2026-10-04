@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router'
 import { BoardCard } from '../boards/BoardCard'
 import { useBoards } from '../boards/useBoards'
-import { NavBar } from './NavBar'
 
 export function BoardsPage() {
   const { boards, thumbs, error, create, duplicate, rename, trash, restore } = useBoards()
@@ -16,7 +15,6 @@ export function BoardsPage() {
 
   return (
     <>
-      <NavBar />
       <main className="page">
         <h1>My boards</h1>
         <div role="alert" className="form-alert">{error}</div>
