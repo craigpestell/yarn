@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { Frame, type WidgetNodeProps } from './Frame'
 
 function PhotoArt() {
@@ -19,12 +19,28 @@ function PhotoArt() {
   )
 }
 
+/** The photo itself: an https image when the widget has one (Storage paths are not rendered yet), otherwise, or if it fails to load, the placeholder. */
+export function PhotoImage({ image, title }: { image?: string; title: string }) {
+  const [failed, setFailed] = useState(false)
+  if (!image || !image.startsWith('https://') || failed) return <PhotoArt />
+  return (
+    <img
+      src={image}
+      alt={title}
+      loading="lazy"
+      draggable={false}
+      referrerPolicy="no-referrer"
+      onError={() => setFailed(true)}
+    />
+  )
+}
+
 export function PhotoNode({ data }: WidgetNodeProps) {
   const w = data.widget
   if (w.type !== 'photo') return null
   return (
     <Frame {...data} className="polaroid">
-      <div className="polaroid-img"><PhotoArt /></div>
+      <div className="polaroid-img"><PhotoImage image={w.data.image} title={w.data.title} /></div>
       <div className="polaroid-title">{w.data.title}</div>
       <div className="polaroid-caption">{w.data.caption}</div>
     </Frame>
