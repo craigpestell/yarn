@@ -15,12 +15,10 @@
 | `SUPABASE_URL` | function | OG function; falls back to `VITE_SUPABASE_URL` |
 | `SUPABASE_ANON_KEY` | function | OG function; falls back to `VITE_SUPABASE_ANON_KEY` |
 | `VITE_CONTACT_EMAIL` | build | copyright/takedown address shown in the footer; the footer line is hidden when unset |
-| `SUPABASE_SERVICE_ROLE_KEY` | function (secret) | `api/purge.ts` only; bypasses RLS. Never `VITE_`-prefixed, never in the repo |
-| `CRON_SECRET` | function (secret) | any long random string; Vercel sends it as a Bearer token on cron calls, and the purge refuses everything without it |
 
 ## Trash purge
 
-`vercel.json` runs `/api/purge` daily (04:00 UTC). It permanently deletes boards trashed more than 30 days ago (rows cascade to links, shares and topic tags) and removes their thumbnail files first; if the files cannot be removed the board is kept for the next run. It handles up to 100 boards per run. To run it by hand: `curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/purge`.
+Migration `20261006000001_purge_trash.sql` schedules a pg_cron job (`purge-trashed-boards`, daily 04:00 UTC) that permanently deletes boards trashed more than 30 days ago; links, shares, invites and topic tags cascade. No secrets or Vercel config are involved. Known limit: Supabase Storage forbids deleting files from SQL, so those boards' thumbnail PNGs (at most 256 KB each) stay in the `thumbnails` bucket. Check the job with `select * from cron.job_run_details order by start_time desc limit 5;`.
 
 ## Supabase Auth (production project)
 
