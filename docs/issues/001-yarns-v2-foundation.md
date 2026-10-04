@@ -1,6 +1,6 @@
 # 001 Yarns v2 foundation
 
-Status: done (M1-M2; M3-M7 pending)
+Status: M1-M4 done, pending Gate 2 review (M5-M7 pending)
 Approved: 2026-10-03 (Gate 1). Scope of first build: M1-M2 only, then stop for review.
 
 ## Context
@@ -176,3 +176,16 @@ Also: board pages use `/b/:slug` for v1.
 ## Notes
 
 2026-10-03: M1-M2 built, verified (typecheck, 52 vitest, 146 pgTAP on local Supabase) and validated (no Critical/Important). Migrations 000001-000002 applied to remote; 000003 (indexes, slug rules) committed but not yet pushed. Branch m1-m2-foundation.
+
+2026-10-04: M4 built on branch m4-auth-boards (auth, My Boards, thumbnails, server autosave; AC 1-6). Decisions:
+- New deps: @supabase/supabase-js, react-router. Client uses only the anon key; PKCE flow.
+- Migrations 20261004000001 (delete_my_account) and 20261004000002 (private `thumbnails` bucket, owner-only RLS) are local only, not pushed. Storage forbids SQL deletes of objects, so the client removes thumbnails first and delete_my_account is not called if that fails.
+- Thumbnails live at `<uid>/<boardId>.png`, rendered client-side (SVG to canvas) and uploaded only after a successful save; owner-only read, public-board access is an M5 follow-up.
+- Autosave: debounced, single-flight, optimistic revision. stop()/flush() await the in-flight save and the queued follow-up; logout flushes before signOut; beforeunload guard while unsaved. A null from save_board is a conflict only when a session exists (otherwise "log in again"); after a lost response the server is re-read before declaring a conflict. The stored title is sent only if the user edited it (the editor caps titles at 50, the DB at 200).
+- Account deletion lands on /login with a one-off notice.
+- Fix loop 2: thumbnail scheduler captures the doc at schedule time and ignores schedule() after stop(); logout flush and stop() are bounded (8s) with a busy button and a "Log out anyway (discard unsaved edits)" option on failure or timeout; account deletion re-lists the Storage folder after remove() and refuses to call delete_my_account if files remain; reconcile checks the remembered lost payload (JSON-normalised compare) and re-sends current state on top; in-app navigation while offline/rejected/unauthenticated/conflict is blocked by a react-router `useBlocker` ("Stay" / "Leave anyway", so main.tsx uses a data router); a stopped autosave instance no longer reports status.
+- Follow-ups (documented, not done in M4):
+  - A `save_board` null with a locally valid but server-revoked session is still reported as a conflict, and an expired-token PostgREST error (`PGRST301`) becomes 'rejected' with no retry.
+  - Title guard: editing the title and then typing the original text back still counts as touched, so a truncated 50-char editor title could overwrite a longer stored title (DB allows 200).
+  - Account deletion is only partly atomic: if `delete_my_account` fails after thumbnails were removed, the thumbnails are gone until each board's next save. Also plan a service-role orphan purge for Storage.
+Not verified: real OAuth (Google/GitHub providers are disabled locally), the email confirmation / password-reset round trip, end-to-end Storage upload and cleanup (Storage container not running locally; bucket/RLS covered by pgTAP only), PNG rasterisation in a real browser, keepalive save on pagehide (best effort only), and the 30-day purge of soft-deleted boards.

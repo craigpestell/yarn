@@ -1,5 +1,5 @@
 import { ReactFlowProvider } from '@xyflow/react'
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Canvas } from './editor/Canvas'
 import { Inspector } from './editor/Inspector'
 import { TitleEdit } from './editor/TitleEdit'
@@ -7,7 +7,7 @@ import { Toolbar } from './editor/Toolbar'
 import { useBoard } from './editor/store'
 import './styles.css'
 
-export function App() {
+export function App({ nav, banner }: { nav?: ReactNode; banner?: ReactNode } = {}) {
   const error = useBoard((s) => s.error)
   const clearError = useBoard((s) => s.clearError)
   const info = useBoard((s) => s.info)
@@ -24,10 +24,12 @@ export function App() {
   return (
     <ReactFlowProvider>
       <div className="app">
+        {nav}
         <header className="topbar">
           <TitleEdit />
           <Toolbar />
         </header>
+        {banner}
         {error && (
           <div className="error" role="alert">
             <span>{error}</span>
