@@ -1,6 +1,6 @@
 import type { Doc } from '../../shared/schema'
 
-/** Neutral public demo: the Dyatlov Pass incident. Hand-authored; no images (so no licence exposure). */
+/** Neutral public demo: the Dyatlov Pass incident. Hand-authored; its two images are public-domain Wikimedia Commons files, each with its Commons page as the licence source. */
 export const DEMO_TITLE = 'Dyatlov Pass incident'
 
 // NOT a fetch time: the content was written from memory and its sources were NOT opened or verified by code.
@@ -12,6 +12,21 @@ const NATURE = {
   url: 'https://www.nature.com/articles/s43247-020-00081-8',
   title: 'Gaume and Puzrin, Communications Earth & Environment (2021)',
   retrievedAt: RETRIEVED,
+}
+
+const TENT_PHOTO = {
+  url: 'https://commons.wikimedia.org/wiki/File:Dyatlov_Pass_incident_02.jpg',
+  title: 'File:Dyatlov Pass incident 02.jpg (Wikimedia Commons)',
+  retrievedAt: RETRIEVED,
+  license: 'Public domain',
+  attribution: 'Soviet investigators, 1959 (unknown author), via Wikimedia Commons',
+}
+const CASE_FILE = {
+  url: 'https://commons.wikimedia.org/wiki/File:Dyatlov.Volume_1.Original_cover.jpg',
+  title: 'File:Dyatlov.Volume 1.Original cover.jpg (Wikimedia Commons)',
+  retrievedAt: RETRIEVED,
+  license: 'Public domain',
+  attribution: 'Прокуратура Свердловской области, СССР, via Wikimedia Commons',
 }
 
 export const DEMO_DOC: Doc = {
@@ -49,6 +64,14 @@ export const DEMO_DOC: Doc = {
       id: 'theories', type: 'note', x: 340, y: 680, w: 200, h: 200, rotation: 4, status: 'speculation', sources: [WIKI],
       data: { color: '#e9d5ff', text: 'OTHER THEORIES\n\nMilitary testing, infrasound and other ideas have been proposed. None has strong supporting evidence.' },
     },
+    {
+      id: 'tent-photo', type: 'photo', x: 340, y: -340, w: 220, h: 260, rotation: -3, sources: [TENT_PHOTO],
+      data: { title: 'The tent, 26 Feb 1959', caption: 'Photographed by the search party', image: 'https://upload.wikimedia.org/wikipedia/commons/7/71/Dyatlov_Pass_incident_02.jpg' },
+    },
+    {
+      id: 'case-file', type: 'photo', x: 680, y: 680, w: 220, h: 300, rotation: 2, sources: [CASE_FILE],
+      data: { title: 'The case file', caption: 'Cover of volume 1 of the 1959 criminal case', image: 'https://upload.wikimedia.org/wikipedia/commons/6/6c/Dyatlov.Volume_1.Original_cover.jpg' },
+    },
   ],
   edges: [
     { id: 'e1', source: 'expedition', target: 'tent', color: '#e53e3e' },
@@ -59,5 +82,7 @@ export const DEMO_DOC: Doc = {
     { id: 'e6', source: 'tent', target: 'avalanche', color: '#e53e3e' },
     { id: 'e7', source: 'avalanche', target: 'questions', color: '#e53e3e' },
     { id: 'e8', source: 'tent', target: 'theories', color: '#e53e3e' },
+    { id: 'e9', source: 'tent', target: 'tent-photo', color: '#e53e3e' },
+    { id: 'e10', source: 'inquiry', target: 'case-file', color: '#e53e3e' },
   ],
 }
