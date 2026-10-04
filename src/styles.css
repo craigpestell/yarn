@@ -133,5 +133,10 @@ button, select, input, textarea { font: inherit; }
 /* .page has auto side margins, which stop a column-flex item stretching (align-self: stretch is ignored), so ask for the full width; max-width and the auto margins still cap and centre it. */
 .site-body > .page { width: 100%; }
 .site-body > .app { flex: 1 0 0; height: auto; min-height: 0; }
+.site-header { display: flex; align-items: center; gap: 16px; padding: 4px 12px; background: #1c1917; color: #d6d3d1; font-size: 0.9rem; }
+.site-header a { color: #d6d3d1; text-decoration: none; }
+.site-header a:hover, .site-header a.active { color: #fafaf9; text-decoration: underline; }
+.site-header .site-brand { font-family: 'Permanent Marker', cursive; font-size: 1.15rem; color: #fafaf9; }
+.site-header nav { display: flex; gap: 14px; margin-left: auto; }
 .site-footer { padding: 4px 12px; font-size: 0.8rem; background: #1c1917; color: #d6d3d1; }
 .site-footer a { color: #fafaf9; }
