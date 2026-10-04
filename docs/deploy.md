@@ -24,6 +24,20 @@
 - REQUIRED: "Confirm email" stays ON in production. Board invites match the caller's auth email only when `email_confirmed_at` is set; turning confirmations off lets someone register an unconfirmed account with a victim's address and claim their invites.
 - REQUIRED: only enable OAuth providers that return verified emails (Google and GitHub primary-verified emails). Do not add a provider that can return an unverified email.
 
+## Auth email (custom SMTP)
+
+Supabase's built-in mailer is for testing only: about 2 auth emails per hour per project ("email rate limit exceeded"), and it may deliver only to addresses on the Supabase team. Real users need custom SMTP.
+
+Free option: Resend (3,000 emails per month, 100 per day). It sends to any recipient only from a domain you have verified, so use a subdomain of a domain you own (for example `mail.<your-domain>`), not a shared address.
+
+1. Resend: Domains, Add Domain, enter the subdomain. Add the DNS records it lists (DKIM TXT, SPF TXT and MX for the send subdomain) at your DNS host, then Verify.
+2. Resend: API Keys, create a key with "Sending access" limited to that domain. Treat it as a secret: never commit it, and enter it only in the Supabase dashboard.
+3. Supabase dashboard, Authentication, Emails, SMTP Settings, enable custom SMTP: host `smtp.resend.com`, port `465`, username `resend`, password the API key, sender e.g. `noreply@<send-subdomain>`, sender name `Yarns`.
+4. Authentication, Rate Limits: raise "Rate limit for sending emails" (it is only adjustable once custom SMTP is on). Keep it modest to limit abuse.
+5. Test: sign up with a fresh address, confirm the email arrives (check spam once), and run the reset-password flow. Confirmations stay ON.
+
+Re-signing up with an already confirmed address sends nothing by design (it does not reveal which addresses exist); test with a new address, or use reset-password.
+
 ## SPA fallback caveats (vercel.json)
 
 - The catch-all rewrite sends every path without a dot (except `/api/...`) to `/index.html`. Paths containing a dot (for example `/foo.txt`) and `/.well-known/...` are not rewritten, so they 404 unless a real file exists. A bare `/api` (no trailing slash) is rewritten to the SPA shell; `/api/...` is not.
