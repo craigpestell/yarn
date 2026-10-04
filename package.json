@@ -4,16 +4,32 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "dev": "vite",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "build": "echo \"build placeholder: app arrives in M3\""
+    "build": "vite build"
   },
   "dependencies": {
+    "@fontsource/permanent-marker": "^5.3.0",
+    "@xyflow/react": "^12.12.0",
     "elkjs": "^0.12.0",
-    "zod": "^4.6.5"
+    "nanoid": "^6.0.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/jest-axe": "^3.5.9",
     "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "jest-axe": "^11.0.0",
+    "jsdom": "^30.1.1",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   }
