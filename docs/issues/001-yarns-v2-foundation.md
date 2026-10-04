@@ -1,6 +1,6 @@
 # 001 Yarns v2 foundation
 
-Status: M1-M4 done, pending Gate 2 review (M5-M7 pending)
+Status: M1-M7 done (repo side). Outstanding: real Vercel deploy and post-deploy checklist, demo board publish, AC 22 real end-to-end agent run.
 Approved: 2026-10-03 (Gate 1). Scope of first build: M1-M2 only, then stop for review.
 
 ## Context
@@ -237,3 +237,14 @@ Deferred / not verified:
 - A failing shared image URL is dropped from every widget using it (with a warning each), and the orphaned Commons licence source is removed with it; licence and host failures still reject.
 - The SDK subprocess runs in a per-call temp cwd (removed afterwards), and the no-op filter is gone. seed-curator's non-local `--yes` guard is a tested pure function (`checkTarget`).
 
+
+2026-10-04: M7 built on branch m7-deploy (AC 23, repo side), not committed, nothing pushed or deployed. Verified locally: typecheck, vitest, `npm run build:verify` (now also `check:fonts`). Decisions:
+- vercel.json: `/b/:slug` to the OG function first, then SPA fallback `/((?!api/)[^.]*)` to `/index.html`; `/assets/*` immutable cache. Static files and functions resolve before rewrites on Vercel.
+- Font: Permanent Marker is self-hosted through the existing `@fontsource/permanent-marker` import (woff2 is emitted into `dist/assets`). Correction to the brief: this font is licensed Apache-2.0 (Font Diner), not OFL; the licence text ships at `public/licenses/permanent-marker-LICENSE.txt`. `scripts/checkFonts.ts` (in `build:verify`, unit-tested) fails on googleapis/gstatic references. `engines.node` is `22.x` in package.json.
+- Footer: root layout route renders a contact line from `VITE_CONTACT_EMAIL` (validated as a plain email, hidden if unset or malformed). No address is invented; set it in Vercel.
+- CI: `.github/workflows/ci.yml` (typecheck, test, build:verify on PR and push to main, Node 22, no secrets; the local-stack test skips without LOCAL_* variables).
+- Demo: `agents/fixtures/demoBoard.ts` + `agents/seed-demo.ts` (`npm run seed:demo`); no images; writes a private draft via writeDraft; `--publish <slug> [--thumbnail <file.png>]` is a separate service-role update (the thumbnail must be a PNG of at most 262144 bytes, checked before any store call; without it og:image 404s); `--yes` for non-local targets. Re-seeding is refused when the curator already has a non-deleted demo board unless `--force`. The DemoStore guards on publish: board is the curator's, not deleted, titled as the demo, doc valid, and widgets and edges equal to the fixture (only those two are compared, not other doc fields); store lookup errors throw rather than read as "not found". Source URLs (Wikipedia, Britannica, Nature 2021) were written from memory and are not checked offline: the seed's resolver probes them and fails if one is dead.
+- docs/deploy.md covers Vercel settings, env var names, Auth redirect and OAuth setup, the REQUIRED email-confirmation setting, and the post-deploy checklist.
+Not verified: the real Vercel deploy, the OG function on Vercel, the SPA fallback and cache headers on Vercel, the footer layout in a real browser, and the seed against any Supabase project.
+
+2026-10-04: M7 approved at Gate 2 after three fix loops and shipped on branch m7-deploy. Not done by the agents: the Vercel deploy, CI run on GitHub, browser layout check, real seed/publish, source URL check, AC 22 real run.
