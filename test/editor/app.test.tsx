@@ -1,0 +1,241 @@
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { axe } from 'jest-axe'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { App } from '../../src/App'
+import { SAMPLE_DOC, SAMPLE_TITLE } from '../../src/editor/sample'
+import { useBoard } from '../../src/editor/store'
+
+const s = () => useBoard.getState()
+beforeEach(() => {
+  s().loadBoard(SAMPLE_TITLE, SAMPLE_DOC)
+})
+const node = (label: string) => screen.getByRole('group', { name: new RegExp(`^(Photo|Note|Wanted poster|Paper): ${label}`) })
+
+describe('editor keyboard behaviour', () => {
+  it('focuses widgets and yarn, and nudges with arrow keys', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const lamp = node('Lantern room')
+    lamp.focus()
+    expect(lamp).toHaveFocus()
+    const before = s().doc.widgets.find((w) => w.id === 'w-lamp')
+    await user.keyboard('{ArrowRight}{ArrowDown}')
+    const after = s().doc.widgets.find((w) => w.id === 'w-lamp')
+    expect([after?.x, after?.y]).toEqual([(before?.x ?? 0) + 10, (before?.y ?? 0) + 10])
+    const yarns = screen.getAllByRole('group', { name: /^Yarn between/ })
+    expect(yarns).toHaveLength(SAMPLE_DOC.edges.length)
+    yarns[0]?.focus()
+    expect(yarns[0]).toHaveFocus()
+  })
+  it('Enter selects and opens the inspector; Delete removes widget and its edges', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const keeper = node('The keeper')
+    keeper.focus()
+    await user.keyboard('{Enter}')
+    expect(screen.getByRole('complementary', { name: 'Inspector' })).toBeInTheDocument()
+    keeper.focus()
+    await user.keyboard('{Delete}')
+    expect(s().doc.widgets.some((w) => w.id === 'w-keeper')).toBe(false)
+    expect(s().doc.edges.some((e) => e.source === 'w-keeper' || e.target === 'w-keeper')).toBe(false)
+  })
+  it('Delete on a focused yarn removes only that yarn', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const yarn = screen.getAllByRole('group', { name: /^Yarn between/ })[0]
+    yarn?.focus()
+    await user.keyboard('{Delete}')
+    expect(s().doc.edges).toHaveLength(SAMPLE_DOC.edges.length - 1)
+    expect(s().doc.widgets).toHaveLength(SAMPLE_DOC.widgets.length)
+  })
+  it('Enter on a yarn selects it and the inspector can delete it', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    screen.getAllByRole('group', { name: /^Yarn between/ })[0]?.focus()
+    await user.keyboard('{Enter}')
+    const insp = screen.getByRole('complementary', { name: 'Inspector' })
+    await user.click(within(insp).getByRole('button', { name: 'Delete yarn' }))
+    expect(s().doc.edges).toHaveLength(SAMPLE_DOC.edges.length - 1)
+  })
+  it('connection mode toggles an edge and Escape cancels', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const toggle = screen.getByRole('button', { name: 'Connect yarn' })
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    node('The keeper').focus()
+    await user.keyboard('{Enter}')
+    expect(s().connect.source).toBe('w-keeper')
+    await user.keyboard('{Escape}')
+    expect(s().connect).toEqual({ active: false, source: null })
+    expect(toggle).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(toggle)
+    node('The keeper').focus()
+    await user.keyboard('{Enter}')
+    node('Harbor at dawn').focus()
+    await user.keyboard('{Enter}')
+    expect(s().doc.edges).toHaveLength(SAMPLE_DOC.edges.length + 1)
+  })
+  it('adding a widget opens the inspector', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Add note' }))
+    expect(screen.getByRole('complementary', { name: 'Inspector' })).toBeInTheDocument()
+    await user.type(screen.getByLabelText('Text'), 'hi')
+    const sel = s().selection
+    const w = s().doc.widgets.find((x) => x.id === sel?.id)
+    expect(w?.type === 'note' && w.data.text).toBe('hi')
+  })
+  it('title edit: Enter saves, Escape cancels, maxLength 50', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: /Board title/ }))
+    const input = screen.getByRole('textbox', { name: 'Board title' })
+    expect(input).toHaveAttribute('maxLength', '50')
+    await user.clear(input)
+    await user.type(input, 'Abandoned{Escape}')
+    expect(s().title).toBe(SAMPLE_TITLE)
+    await user.click(screen.getByRole('button', { name: /Board title/ }))
+    const input2 = screen.getByRole('textbox', { name: 'Board title' })
+    await user.clear(input2)
+    await user.type(input2, 'Fresh title{Enter}')
+    expect(s().title).toBe('Fresh title')
+  })
+  it('shows a visible error and keeps state when an import is malformed', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const doc = s().doc
+    const file = new File([JSON.stringify({ version: 1, widgets: [], edges: [{ id: 'e', source: 'x', target: 'y' }] })], 'bad.json', { type: 'application/json' })
+    await user.upload(screen.getByLabelText('Import JSON file'), file)
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Invalid board data/)
+    expect(s().doc).toBe(doc)
+  })
+})
+
+describe('focus, notices and keyboard edge cases', () => {
+  it('Escape then blur does not save the cancelled title', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: /Board title/ }))
+    const input = screen.getByRole('textbox', { name: 'Board title' })
+    await user.clear(input)
+    await user.type(input, 'Cancelled')
+    act(() => {
+      fireEvent.keyDown(input, { key: 'Escape' })
+      fireEvent.blur(input)
+    })
+    expect(s().title).toBe(SAMPLE_TITLE)
+  })
+  it('empty title on blur shows a visible message and keeps the title', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: /Board title/ }))
+    await user.clear(screen.getByRole('textbox', { name: 'Board title' }))
+    await user.tab()
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Title must be/)
+    expect(s().title).toBe(SAMPLE_TITLE)
+  })
+  it('Delete moves focus to the next widget, then to the canvas when none remain', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<App />)
+    const first = container.querySelector<HTMLElement>('.react-flow__node')
+    first?.focus()
+    const nextId = container.querySelectorAll('.react-flow__node')[1]?.getAttribute('data-id')
+    await user.keyboard('{Delete}')
+    await waitFor(() => expect(document.activeElement?.getAttribute('data-id')).toBe(nextId))
+    s().loadBoard('t', { version: 1, widgets: [SAMPLE_DOC.widgets[0]], edges: [] })
+    await waitFor(() => expect(container.querySelectorAll('.react-flow__node')).toHaveLength(1))
+    container.querySelector<HTMLElement>('.react-flow__node')?.focus()
+    await user.keyboard('{Delete}')
+    await waitFor(() => expect(document.activeElement).toBe(container.querySelector('.canvas')))
+  })
+  it('Delete on a yarn moves focus to another yarn', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<App />)
+    container.querySelector<SVGElement>('.react-flow__edge')?.focus()
+    await user.keyboard('{Delete}')
+    await waitFor(() => expect(document.activeElement?.classList.contains('react-flow__edge')).toBe(true))
+  })
+  it('adding a widget focuses it; closing the inspector returns focus to the widget', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Add paper' }))
+    const id = s().selection?.id ?? ''
+    await waitFor(() => expect(document.activeElement?.getAttribute('data-id')).toBe(id))
+    await user.click(screen.getByRole('button', { name: 'Close' }))
+    await waitFor(() => expect(document.activeElement?.getAttribute('data-id')).toBe(id))
+  })
+  it('deleting from the inspector moves focus to the canvas', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Add note' }))
+    await user.click(screen.getByRole('button', { name: 'Delete widget' }))
+    await waitFor(() => expect(document.activeElement).toBe(container.querySelector('.canvas')))
+  })
+  it('Backspace does not delete and Ctrl+Arrow does not nudge', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const lamp = node('Lantern room')
+    lamp.focus()
+    const before = s().doc
+    await user.keyboard('{Backspace}')
+    await user.keyboard('{Control>}{ArrowRight}{/Control}')
+    expect(s().doc).toBe(before)
+  })
+  it('shows info and error notices in status/alert regions', () => {
+    s().reportInfo('Heads up')
+    s().reportError('Broken')
+    render(<App />)
+    expect(screen.getByRole('status')).toHaveTextContent('Heads up')
+    expect(screen.getByRole('alert')).toHaveTextContent('Broken')
+  })
+})
+
+describe('yarn rendering (regression: edges dropped without real handles)', () => {
+  it('renders real pin handles, resolvable edge handle ids, one edge element per doc edge, no React Flow warnings', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { container } = render(<App />)
+    const nodes = container.querySelectorAll('.react-flow__node')
+    expect(nodes).toHaveLength(SAMPLE_DOC.widgets.length)
+    for (const n of nodes) {
+      expect(n.querySelector('.react-flow__handle.source[data-handleid="pin"]')).not.toBeNull()
+      expect(n.querySelector('.react-flow__handle.target[data-handleid="pin"]')).not.toBeNull()
+    }
+    expect(container.querySelectorAll('.react-flow__edge')).toHaveLength(SAMPLE_DOC.edges.length)
+    const logged = [...warn.mock.calls, ...err.mock.calls].map((c) => String(c[0]))
+    expect(logged.filter((m) => m.includes('React Flow'))).toEqual([])
+    warn.mockRestore()
+    err.mockRestore()
+  })
+  it('edges carry the pin handle ids and the yarn is selectable by click', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<App />)
+    await user.click(container.querySelector('.react-flow__edge .yarn-main') as Element)
+    expect(s().selection).toEqual({ kind: 'edge', id: 'e1' })
+    expect(screen.getByRole('button', { name: 'Delete yarn' })).toBeInTheDocument()
+  })
+  it('connect mode creates a visible edge', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Connect yarn' }))
+    await user.click(node('The keeper'))
+    await user.click(node('Harbor at dawn'))
+    expect(container.querySelectorAll('.react-flow__edge')).toHaveLength(SAMPLE_DOC.edges.length + 1)
+  })
+})
+
+describe('accessibility', () => {
+  it('has no axe violations', async () => {
+    const { container } = render(<App />)
+    const results = await axe(container)
+    expect(results.violations).toEqual([])
+  })
+  it('has no axe violations with the inspector open', async () => {
+    s().select({ kind: 'widget', id: 'w-paper' })
+    const { container } = render(<App />)
+    expect((await axe(container)).violations).toEqual([])
+  })
+})

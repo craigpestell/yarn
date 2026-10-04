@@ -1,0 +1,74 @@
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { font-family: system-ui, sans-serif; color: #1f2937; }
+.app { display: flex; flex-direction: column; height: 100%; }
+.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 8px 12px; background: #292524; color: #fafaf9; }
+.title { margin: 0; font-size: 1.1rem; }
+.title button, .title input { font: inherit; color: inherit; background: transparent; border: 1px dashed #a8a29e; border-radius: 4px; padding: 2px 8px; cursor: text; }
+.title input { background: #1c1917; min-width: 16rem; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+button, select, input, textarea { font: inherit; }
+.toolbar button, .inspector button, .error button { padding: 4px 10px; border-radius: 4px; border: 1px solid #78716c; background: #f5f5f4; color: #1c1917; cursor: pointer; }
+.toolbar button[aria-pressed='true'] { background: #22c55e; border-color: #15803d; }
+.toolbar button:disabled { opacity: 0.6; cursor: progress; }
+.hint { color: #fde68a; font-size: 0.9rem; }
+.error { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; background: #fee2e2; color: #7f1d1d; }
+.info { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; background: #fef3c7; color: #78350f; }
+.info button { padding: 4px 10px; }
+.canvas:focus { outline: none; }
+.workspace { flex: 1; min-height: 0; display: flex; }
+.stage { flex: 1; min-width: 0; position: relative; }
+.canvas, .canvas .react-flow { width: 100%; height: 100%; }
+.canvas .react-flow {
+  background-color: #c89b6a;
+  background-image: radial-gradient(rgba(120, 72, 30, 0.35) 1px, transparent 1.5px), radial-gradient(rgba(255, 235, 200, 0.25) 1px, transparent 1.5px);
+  background-size: 9px 9px, 13px 13px;
+}
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+.react-flow__node:focus-visible { outline: 3px solid #2563eb; outline-offset: 6px; }
+.react-flow__edge:focus-visible { outline: none; }
+.react-flow__edge:focus-visible .yarn-main { stroke-width: 6; stroke: #2563eb; }
+.inspector { width: 300px; max-width: 45vw; overflow-y: auto; padding: 12px; background: #fafaf9; border-left: 1px solid #d6d3d1; display: flex; flex-direction: column; gap: 10px; }
+.inspector h2 { margin: 0; font-size: 1rem; overflow-wrap: anywhere; }
+.inspector-head { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
+.field { display: flex; flex-direction: column; gap: 2px; font-size: 0.85rem; }
+.field.inline { flex-direction: row; align-items: center; gap: 6px; }
+.field input[type='text'], .field input[type='url'], .field textarea, .field select { padding: 4px 6px; border: 1px solid #a8a29e; border-radius: 4px; }
+.sources { border: 1px solid #d6d3d1; border-radius: 4px; }
+.sources ul { margin: 0 0 8px; padding: 0; list-style: none; }
+.sources li { display: flex; justify-content: space-between; gap: 6px; font-size: 0.8rem; }
+.src-url { overflow-wrap: anywhere; }
+.err { color: #b91c1c; margin: 4px 0 0; }
+.inspector .danger { background: #fee2e2; border-color: #b91c1c; color: #7f1d1d; }
+
+.widget { position: relative; cursor: grab; touch-action: none; user-select: none; }
+.art { position: relative; width: 100%; height: 100%; transform-origin: 50% 50%; overflow: hidden; }
+.art.sel { outline: 3px solid #1d4ed8; outline-offset: 3px; }
+.art.sel-source { outline: 4px solid #22c55e; outline-offset: 3px; }
+.art.sel-connected { outline: 4px solid #f97316; outline-offset: 3px; }
+.widget.locked { cursor: default; }
+.tack { position: absolute; pointer-events: none; z-index: 2; }
+.badge { position: absolute; right: 4px; bottom: 4px; z-index: 2; padding: 1px 6px; border-radius: 8px; font-size: 11px; background: #fff; border: 1px solid #57534e; }
+.badge-verified { background: #bbf7d0; }
+.badge-disputed { background: #fecaca; }
+.badge-speculation { background: #e9d5ff; }
+.badge-claim { background: #fde68a; }
+
+.polaroid { background: #fff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); padding: 20px 30px 0; font-family: 'Courier New', Courier, monospace; }
+.polaroid-img { width: 140px; height: 140px; background: #e5e7eb; }
+.polaroid-title { margin-top: 8px; font-weight: bold; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.polaroid-caption { font-size: 12px; max-height: 3.6em; overflow: hidden; }
+.note { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35); }
+.note-body { position: absolute; inset: 0; padding: 22px 14px 10px; font-family: 'Permanent Marker', cursive; font-size: 18px; line-height: 28px; background-image: repeating-linear-gradient(transparent 0 27px, rgba(0, 0, 0, 0.12) 27px 28px); background-blend-mode: multiply; }
+.note-text { white-space: pre-wrap; overflow: hidden; max-height: 100%; overflow-wrap: anywhere; }
+.note-fold { position: absolute; right: 0; bottom: 0; width: 28px; height: 28px; background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, 0.18) 50%); }
+.wanted { padding: 14px; background: linear-gradient(160deg, #f3e2b3, #e0c58a 60%, #cba96b); border: 6px solid #7c4a1e; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); font-family: Georgia, serif; text-align: center; color: #3b2410; }
+.wanted-head { font-size: 34px; font-weight: bold; letter-spacing: 3px; }
+.wanted-name { font-size: 20px; font-weight: bold; margin-top: 6px; }
+.wanted-alias { font-style: italic; }
+.wanted-crime { margin-top: 6px; font-weight: bold; }
+.wanted-desc { margin-top: 6px; font-size: 13px; max-height: 80px; overflow: hidden; }
+.wanted-reward { position: absolute; left: 14px; right: 14px; bottom: 12px; border: 3px double #7c4a1e; padding: 4px; display: flex; flex-direction: column; font-size: 12px; }
+.wanted-reward strong { font-size: 16px; }
+.paper { background-color: #fffdf5; background-image: repeating-linear-gradient(transparent 0 23px, #93c5fd 23px 24px); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35); padding: 34px 14px 10px 36px; border-left: 2px solid #fca5a5; font-family: 'Courier New', Courier, monospace; font-size: 14px; line-height: 24px; }
+.paper-text { white-space: pre-wrap; overflow: hidden; max-height: 100%; overflow-wrap: anywhere; }
