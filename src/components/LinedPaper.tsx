@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import { useDraggable } from '@dnd-kit/core'
-import { Pen } from 'lucide-react'
+import { Edit, Eraser } from 'lucide-react'
 import type { LinedPaper, DrawingPath } from '../types'
 import DrawingOverlay from './DrawingOverlay'
+import { CommonActionButton, CommonClearButton } from './BaseComponent'
 
 const PaperContainer = styled.div<{ 
   $rotation: number 
@@ -68,36 +69,6 @@ const PaperContainer = styled.div<{
   }
 `
 
-const DrawButton = styled.button<{ $active: boolean }>`
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: ${props => props.$active ? '#3b82f6' : 'rgba(255, 255, 255, 0.9)'};
-  color: ${props => props.$active ? 'white' : '#374151'};
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0.8;
-  transition: all 0.2s ease;
-  z-index: 110;
-  
-  &:hover {
-    opacity: 1;
-    background: ${props => props.$active ? '#2563eb' : 'rgba(255, 255, 255, 1)'};
-    transform: scale(1.1);
-  }
-  
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`
-
 const PaperContent = styled.div`
   position: absolute;
   top: 30px;
@@ -124,6 +95,10 @@ interface LinedPaperProps {
   isConnecting?: boolean
   isConnectionSource?: boolean
   isConnectedToSource?: boolean
+  isPenMode?: boolean
+  penColor?: string
+  penWidth?: number
+  onDrawingModeChange?: (isDrawing: boolean) => void
 }
 
 const LinedPaperComponent: React.FC<LinedPaperProps> = ({
@@ -133,9 +108,14 @@ const LinedPaperComponent: React.FC<LinedPaperProps> = ({
   onDrawingsUpdate,
   isConnecting = false,
   isConnectionSource = false,
-  isConnectedToSource = false
+  isConnectedToSource = false,
+  isPenMode = false,
+  penColor = '#000000',
+  penWidth = 2,
+  onDrawingModeChange
 }) => {
-  const [isDrawingMode, setIsDrawingMode] = useState(false)
+  // Remove local drawing state, use global pen mode
+  const isDrawingMode = isPenMode
   
   const {
     attributes,
@@ -167,13 +147,13 @@ const LinedPaperComponent: React.FC<LinedPaperProps> = ({
     }
   }
 
-  const handleDrawingToggle = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsDrawingMode(!isDrawingMode)
-  }
-
   const handleDrawingsUpdate = (drawings: unknown[]) => {
     onDrawingsUpdate(paper.id, drawings as DrawingPath[])
+  }
+
+  const handleClearDrawings = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onDrawingsUpdate(paper.id, [])
   }
 
   const style = {
@@ -197,12 +177,17 @@ const LinedPaperComponent: React.FC<LinedPaperProps> = ({
       $isConnectedToSource={isConnectedToSource}
       data-component="paper"
     >
-      <DrawButton
-        $active={isDrawingMode}
-        onClick={handleDrawingToggle}
+      <CommonActionButton onClick={onClick}>
+        <Edit size={16} />
+      </CommonActionButton>
+      
+      <CommonClearButton 
+        $visible={!!isPenMode && !!(paper.drawings && paper.drawings.length > 0)}
+        onClick={handleClearDrawings}
+        title="Clear drawings"
       >
-        <Pen />
-      </DrawButton>
+        <Eraser size={16} />
+      </CommonClearButton>
       
       <PaperContent>
         {paper.content || 'Write your notes here...'}
@@ -214,6 +199,8 @@ const LinedPaperComponent: React.FC<LinedPaperProps> = ({
         drawings={paper.drawings || []}
         isDrawingMode={isDrawingMode}
         onDrawingsChange={handleDrawingsUpdate}
+        penColor={penColor}
+        penWidth={penWidth}
       />
     </PaperContainer>
   )

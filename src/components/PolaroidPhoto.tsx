@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
-import { Edit, Pen } from 'lucide-react'
+import { Edit, Eraser } from 'lucide-react'
 import { useDraggable } from '@dnd-kit/core'
 import type { Photo, DrawingPath } from '../types'
 import DrawingOverlay from './DrawingOverlay'
+import { CommonActionButton, CommonClearButton } from './BaseComponent'
 
 const PolaroidContainer = styled.div<{
   $rotation: number
@@ -38,46 +39,6 @@ const PolaroidContainer = styled.div<{
       0 8px 16px rgba(0, 0, 0, 0.15),
       0 12px 30px rgba(0, 0, 0, 0.2);
     z-index: 100;
-  }
-`
-
-const ActionButton = styled.button`
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #f3f4f6;
-  color: #374151;
-  border: none;
-  border-radius: 4px;
-  padding: 4px;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-  z-index: 200;
-
-  &:hover {
-    background: #e5e7eb;
-    transform: scale(1.1);
-  }
-`
-
-const DrawButton = styled.button<{ $active: boolean }>`
-  position: absolute;
-  top: 8px;
-  right: 40px;
-  background: ${props => props.$active ? '#3b82f6' : 'rgba(255, 255, 255, 0.9)'};
-  color: ${props => props.$active ? 'white' : '#374151'};
-  border: none;
-  border-radius: 4px;
-  padding: 4px;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-  z-index: 110;
-
-  &:hover {
-    background: ${props => props.$active ? '#2563eb' : 'rgba(255, 255, 255, 1)'};
-    transform: scale(1.1);
   }
 `
 
@@ -141,6 +102,10 @@ interface PolaroidPhotoProps {
   isConnecting?: boolean
   isConnectionSource?: boolean
   isConnectedToSource?: boolean
+  isPenMode?: boolean
+  penColor?: string
+  penWidth?: number
+  onDrawingModeChange?: (isDrawing: boolean) => void
 }
 
 const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
@@ -150,9 +115,14 @@ const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
   onDrawingsUpdate,
   isConnecting = false,
   isConnectionSource = false,
-  isConnectedToSource = false
+  isConnectedToSource = false,
+  isPenMode = false,
+  penColor = '#000000',
+  penWidth = 2,
+  onDrawingModeChange
 }) => {
-  const [isDrawingMode, setIsDrawingMode] = useState(false)
+  // Remove local drawing state, use global pen mode
+  const isDrawingMode = isPenMode
   
   const {
     attributes,
@@ -184,13 +154,13 @@ const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
     }
   }
 
-  const handleDrawingToggle = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsDrawingMode(!isDrawingMode)
-  }
-
   const handleDrawingsUpdate = (drawings: unknown[]) => {
     onDrawingsUpdate(photo.id, drawings as DrawingPath[])
+  }
+
+  const handleClearDrawings = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onDrawingsUpdate(photo.id, [])
   }
 
   const style = {
@@ -214,13 +184,17 @@ const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
       $isConnectedToSource={isConnectedToSource}
       data-component="photo"
     >
-      <ActionButton onClick={onClick}>
+      <CommonActionButton onClick={onClick}>
         <Edit size={16} />
-      </ActionButton>
-      
-      <DrawButton $active={isDrawingMode} onClick={handleDrawingToggle}>
-        <Pen size={16} />
-      </DrawButton>
+      </CommonActionButton>
+
+      <CommonClearButton 
+        $visible={!!isPenMode && !!(photo.drawings && photo.drawings.length > 0)}
+        onClick={handleClearDrawings}
+        title="Clear drawings"
+      >
+        <Eraser size={16} />
+      </CommonClearButton>
 
       <PhotoFrame>
         {photo.imageUrl ? (
@@ -239,6 +213,8 @@ const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
         drawings={photo.drawings || []}
         isDrawingMode={isDrawingMode}
         onDrawingsChange={handleDrawingsUpdate}
+        penColor={penColor}
+        penWidth={penWidth}
       />
     </PolaroidContainer>
   )

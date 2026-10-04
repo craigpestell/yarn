@@ -69,6 +69,10 @@ interface PinboardProps {
   onPaperDrawingsUpdate: (paperId: string, drawings: unknown[]) => void
   onAddConnection: (fromItemId: string, toItemId: string, fromItemType: 'photo' | 'note' | 'wanted' | 'paper', toItemType: 'photo' | 'note' | 'wanted' | 'paper') => void
   isConnectionMode?: boolean
+  isPenMode?: boolean
+  penColor: string
+  penWidth: number
+  onDrawingModeChange: (isDrawing: boolean) => void
 }
 
 const Pinboard: React.FC<PinboardProps> = ({
@@ -86,7 +90,11 @@ const Pinboard: React.FC<PinboardProps> = ({
   onWantedDrawingsUpdate,
   onPaperDrawingsUpdate,
   onAddConnection,
-  isConnectionMode = false
+  isConnectionMode = false,
+  isPenMode = false,
+  penColor,
+  penWidth,
+  onDrawingModeChange
 }) => {
   const [isConnecting, setIsConnecting] = useState(false)
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null)
@@ -322,6 +330,10 @@ const Pinboard: React.FC<PinboardProps> = ({
             isConnecting={isConnectionMode || isConnecting}
             isConnectionSource={connectingFrom === photo.id}
             isConnectedToSource={connectingFrom ? areItemsConnected(connectingFrom, photo.id) : false}
+            isPenMode={isPenMode}
+            penColor={penColor}
+            penWidth={penWidth}
+            onDrawingModeChange={onDrawingModeChange}
           />
         ))}
 
@@ -335,6 +347,10 @@ const Pinboard: React.FC<PinboardProps> = ({
             isConnecting={isConnectionMode || isConnecting}
             isConnectionSource={connectingFrom === note.id}
             isConnectedToSource={connectingFrom ? areItemsConnected(connectingFrom, note.id) : false}
+            isPenMode={isPenMode}
+            penColor={penColor}
+            penWidth={penWidth}
+            onDrawingModeChange={onDrawingModeChange}
           />
         ))}
 
@@ -348,6 +364,10 @@ const Pinboard: React.FC<PinboardProps> = ({
             isConnecting={isConnectionMode || isConnecting}
             isConnectionSource={connectingFrom === poster.id}
             isConnectedToSource={connectingFrom ? areItemsConnected(connectingFrom, poster.id) : false}
+            isPenMode={isPenMode}
+            penColor={penColor}
+            penWidth={penWidth}
+            onDrawingModeChange={onDrawingModeChange}
           />
         ))}
 
@@ -361,6 +381,10 @@ const Pinboard: React.FC<PinboardProps> = ({
             isConnecting={isConnectionMode || isConnecting}
             isConnectionSource={connectingFrom === paper.id}
             isConnectedToSource={connectingFrom ? areItemsConnected(connectingFrom, paper.id) : false}
+            isPenMode={isPenMode}
+            penColor={penColor}
+            penWidth={penWidth}
+            onDrawingModeChange={onDrawingModeChange}
           />
         ))}
 

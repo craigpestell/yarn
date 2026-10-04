@@ -1,4 +1,4 @@
-import type { Photo, StickyNote, WantedPoster, LinedPaper, YarnConnection } from '../types'
+import type { Photo, StickyNote, WantedPoster, LinedPaper, CharlieImage, YarnConnection } from '../types'
 
 export interface BoardData {
   version: string
@@ -8,6 +8,7 @@ export interface BoardData {
   notes: StickyNote[]
   wantedPosters: WantedPoster[]
   papers: LinedPaper[]
+  charlieImage?: CharlieImage // Optional for backward compatibility, single image
   connections: YarnConnection[]
 }
 
@@ -17,6 +18,7 @@ export const saveBoard = (
   notes: StickyNote[],
   wantedPosters: WantedPoster[],
   papers: LinedPaper[],
+  charlieImage: CharlieImage,
   connections: YarnConnection[]
 ): void => {
   const boardData: BoardData = {
@@ -27,6 +29,7 @@ export const saveBoard = (
     notes,
     wantedPosters,
     papers,
+    charlieImage,
     connections
   }
 
@@ -98,6 +101,8 @@ const validateBoardData = (data: unknown): data is BoardData => {
     Array.isArray(obj.notes) &&
     Array.isArray(obj.wantedPosters) &&
     Array.isArray(obj.papers) &&
+    // charlieImage is optional for backward compatibility
+    (typeof obj.charlieImage === 'object' || obj.charlieImage === undefined) &&
     Array.isArray(obj.connections)
   )
 }

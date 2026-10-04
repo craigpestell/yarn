@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import styled from 'styled-components'
 import { DndContext, MouseSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
@@ -9,6 +9,7 @@ import PhotoEditor from './components/PhotoEditor'
 import StickyNoteEditor from './components/StickyNoteEditor'
 import WantedPosterEditor from './components/WantedPosterEditor'
 import LinedPaperEditor from './components/LinedPaperEditor'
+import PenToolbar from './components/PenToolbar'
 import Notification, { type NotificationType } from './components/Notification'
 import type { Photo, StickyNote, WantedPoster, LinedPaper, CharlieImage, YarnConnection } from './types'
 import { saveBoard, loadBoard } from './utils/boardStorage'
@@ -38,6 +39,33 @@ const AppTitle = styled.h1`
   z-index: 1000;
   margin: 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  user-select: none;
+  
+  &:hover {
+    color: #e2e8f0;
+  }
+`
+
+const TitleEditor = styled.input`
+  position: absolute;
+  top: 20px;
+  left: 60px; /* Account for emoji width */
+  color: #f7fafc;
+  font-family: 'Courier New', monospace;
+  font-size: 1.5rem;
+  z-index: 1000;
+  margin: 0;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid #4a5568;
+  border-radius: 4px;
+  padding: 4px 8px;
+  outline: none;
+  
+  &:focus {
+    border-color: #63b3ed;
+    background: rgba(0, 0, 0, 0.8);
+  }
 `
 
 const InstructionPanel = styled.div<{ $visible: boolean }>`
@@ -67,124 +95,11 @@ const InstructionPanel = styled.div<{ $visible: boolean }>`
   }
 `
 
-// Starter data for demonstration
-const starterPhotos: Photo[] = [
-  {
-    id: 'starter-1',
-    title: 'Area 51',
-    url: 'https://en.wikipedia.org/wiki/Area_51',
-    notes: 'Top secret military installation. What are they really hiding? UFO testing facility or something more?',
-    x: 150,
-    y: 200,
-    imageUrl: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=300&fit=crop&crop=center',
-    rotation: -5
-  },
-  {
-    id: 'starter-2',
-    title: 'Roswell Incident',
-    url: 'https://en.wikipedia.org/wiki/Roswell_incident',
-    notes: 'The 1947 crash that started it all. Weather balloon or extraterrestrial craft? The timing is suspicious...',
-    x: 450,
-    y: 150,
-    imageUrl: 'https://images.unsplash.com/photo-1614728263952-84ea256f9679?w=400&h=300&fit=crop&crop=center',
-    rotation: 8
-  },
-  {
-    id: 'starter-3',
-    title: 'Project Blue Book',
-    url: 'https://en.wikipedia.org/wiki/Project_Blue_Book',
-    notes: 'Official USAF investigation into UFOs (1952-1969). Officially concluded most sightings were misidentified natural phenomena. But what about the 700+ "unidentified" cases?',
-    x: 200,
-    y: 450,
-    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&crop=center',
-    rotation: -3
-  },
-]
-
-const starterNotes: StickyNote[] = [
-  {
-    id: 'note-1',
-    text: 'All incidents happen near military bases. Coincidence?',
-    x: 350,
-    y: 300,
-    color: '#fef08a',
-    rotation: -8
-  },
-  {
-    id: 'note-2', 
-    text: 'Government cover-up timeline:\n1947 - Roswell\n1952 - Blue Book begins\n1969 - Blue Book ends\n\nWhy the sudden stop?',
-    x: 750,
-    y: 200,
-    color: '#fed7aa',
-    rotation: 5
-  }
-]
-
-const starterWanted: WantedPoster[] = [
-  {
-    id: 'wanted-1',
-    name: 'Edward J. Snowden',
-    alias: 'The Whistleblower',
-    crime: 'Espionage, Theft of Government Property',
-    description: 'Former NSA contractor. 5\'9", brown hair, brown eyes. Known for intelligence leaks.',
-    reward: '$500,000',
-    x: 900,
-    y: 100,
-    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
-    rotation: -6
-  }
-]
-
-const starterPapers: LinedPaper[] = [
-  {
-    id: 'paper-1',
-    content: 'Timeline of Events:\n\n1947 - Roswell Incident\n1952 - Project Blue Book begins\n1969 - Blue Book officially ends\n1984 - Majestic 12 documents surface\n\nQuestions:\n- Why did Blue Book end so abruptly?\n- Are the MJ-12 documents authentic?\n- What happened to the unidentified cases?',
-    x: 1200,
-    y: 250,
-    rotation: 4
-  }
-]
-
-const starterConnections: YarnConnection[] = [
-  {
-    id: 'connection-1',
-    fromItemId: 'starter-1',
-    toItemId: 'starter-2',
-    fromItemType: 'photo',
-    toItemType: 'photo',
-    color: '#e53e3e'
-  },
-  {
-    id: 'connection-2',
-    fromItemId: 'starter-2',
-    toItemId: 'starter-3',
-    fromItemType: 'photo',
-    toItemType: 'photo',
-    color: '#e53e3e'
-  },
-  {
-    id: 'connection-5',
-    fromItemId: 'note-1',
-    toItemId: 'starter-1',
-    fromItemType: 'note',
-    toItemType: 'photo',
-    color: '#e53e3e'
-  },
-  {
-    id: 'connection-6',
-    fromItemId: 'note-2',
-    toItemId: 'starter-3',
-    fromItemType: 'note',
-    toItemType: 'photo',
-    color: '#e53e3e'
-  }
-]
-
 function App() {
-  const [photos, setPhotos] = useState<Photo[]>(starterPhotos)
-  const [notes, setNotes] = useState<StickyNote[]>(starterNotes)
-  const [wantedPosters, setWantedPosters] = useState<WantedPoster[]>(starterWanted)
-  const [papers, setPapers] = useState<LinedPaper[]>(starterPapers)
+  const [photos, setPhotos] = useState<Photo[]>([])
+  const [notes, setNotes] = useState<StickyNote[]>([])
+  const [wantedPosters, setWantedPosters] = useState<WantedPoster[]>([])
+  const [papers, setPapers] = useState<LinedPaper[]>([])
   const [charlieImages, setCharlieImages] = useState<CharlieImage[]>([{
     id: 'charlie-1',
     x: 50,
@@ -192,7 +107,7 @@ function App() {
     width: 200,
     height: 200
   }])
-  const [connections, setConnections] = useState<YarnConnection[]>(starterConnections)
+  const [connections, setConnections] = useState<YarnConnection[]>([])
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const [selectedNote, setSelectedNote] = useState<StickyNote | null>(null)
   const [selectedWanted, setSelectedWanted] = useState<WantedPoster | null>(null)
@@ -202,12 +117,48 @@ function App() {
   const [isWantedEditorOpen, setIsWantedEditorOpen] = useState(false)
   const [isPaperEditorOpen, setIsPaperEditorOpen] = useState(false)
   const [isConnectionMode, setIsConnectionMode] = useState(false)
-  const [boardTitle, setBoardTitle] = useState('UFO Conspiracy Board')
+  const [boardTitle, setBoardTitle] = useState('Jeffrey Epstein Conspiracy Board')
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [tempTitle, setTempTitle] = useState('')
   const [notification, setNotification] = useState<{ message: string; type: NotificationType; visible: boolean }>({
     message: '',
     type: 'info',
     visible: false
   })
+  
+  // Load initial data from file on component mount
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const response = await fetch('/initial-data.json')
+        if (response.ok) {
+          const data = await response.json()
+          setPhotos(data.photos || [])
+          setNotes(data.notes || [])
+          setWantedPosters(data.wantedPosters || [])
+          setPapers(data.papers || [])
+          setConnections(data.connections || [])
+          setBoardTitle(data.title || 'Jeffrey Epstein Conspiracy Board')
+          
+          // Set Charlie image if it exists in the data
+          if (data.charlieImage) {
+            setCharlieImages([data.charlieImage])
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load initial data:', error)
+        // If loading fails, we'll just start with empty arrays (already set as defaults)
+      }
+    }
+    
+    loadInitialData()
+  }, [])
+  
+  // Pen toolbar state
+  const [isAnyComponentDrawing, setIsAnyComponentDrawing] = useState(false)
+  const [isPenMode, setIsPenMode] = useState(false)
+  const [penColor, setPenColor] = useState('#000000')
+  const [penWidth, setPenWidth] = useState(2)
   
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
@@ -571,15 +522,48 @@ function App() {
     setIsConnectionMode(prev => !prev)
   }, [])
 
+  const togglePenMode = useCallback(() => {
+    const newPenMode = !isPenMode
+    setIsPenMode(newPenMode)
+    setIsAnyComponentDrawing(newPenMode)
+  }, [isPenMode])
+
+  const startEditingTitle = useCallback(() => {
+    setTempTitle(boardTitle)
+    setIsEditingTitle(true)
+  }, [boardTitle])
+
+  const saveTitle = useCallback(() => {
+    if (tempTitle.trim()) {
+      setBoardTitle(tempTitle.trim())
+    }
+    setIsEditingTitle(false)
+    setTempTitle('')
+  }, [tempTitle])
+
+  const cancelEditingTitle = useCallback(() => {
+    setIsEditingTitle(false)
+    setTempTitle('')
+  }, [])
+
+  const handleTitleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      saveTitle()
+    } else if (e.key === 'Escape') {
+      cancelEditingTitle()
+    }
+  }, [saveTitle, cancelEditingTitle])
+
   const handleSaveBoard = useCallback(() => {
     try {
-      saveBoard(boardTitle, photos, notes, wantedPosters, papers, connections)
+      const charlieImage = charlieImages[0] // Get the first (and only) Charlie image
+      saveBoard(boardTitle, photos, notes, wantedPosters, papers, charlieImage, connections)
       showNotification('Board saved successfully!', 'success')
     } catch (error) {
       showNotification('Failed to save board', 'error')
       console.error('Save error:', error)
     }
-  }, [boardTitle, photos, notes, wantedPosters, papers, connections, showNotification])
+  }, [boardTitle, photos, notes, wantedPosters, papers, charlieImages, connections, showNotification])
 
   const handleLoadBoard = useCallback(async () => {
     try {
@@ -591,6 +575,11 @@ function App() {
         setPapers(boardData.papers)
         setConnections(boardData.connections)
         setBoardTitle(boardData.title)
+        
+        // Set Charlie image if it exists, otherwise use default
+        if (boardData.charlieImage) {
+          setCharlieImages([boardData.charlieImage])
+        }
         
         // Close any open editors
         setIsPhotoEditorOpen(false)
@@ -612,7 +601,24 @@ function App() {
 
   return (
     <AppContainer>
-      <AppTitle>🧵 {boardTitle}</AppTitle>
+      {isEditingTitle ? (
+        <>
+          <AppTitle style={{ color: '#a0aec0' }}>🧵</AppTitle>
+          <TitleEditor
+            value={tempTitle}
+            onChange={(e) => setTempTitle(e.target.value)}
+            onKeyDown={handleTitleKeyDown}
+            onBlur={saveTitle}
+            autoFocus
+            maxLength={50}
+            placeholder="Enter board title..."
+          />
+        </>
+      ) : (
+        <AppTitle onClick={startEditingTitle} title="Click to edit title">
+          🧵 {boardTitle}
+        </AppTitle>
+      )}
       
       <InstructionPanel $visible={isConnectionMode}>
         <strong>🔗 Connection Mode Active</strong>
@@ -641,6 +647,10 @@ function App() {
           onPaperDrawingsUpdate={updatePaperDrawings}
           onAddConnection={toggleConnection}
           isConnectionMode={isConnectionMode}
+          isPenMode={isPenMode}
+          penColor={penColor}
+          penWidth={penWidth}
+          onDrawingModeChange={setIsAnyComponentDrawing}
         />
 
         {charlieImages.map(charlie => (
@@ -661,6 +671,8 @@ function App() {
         onLoadBoard={handleLoadBoard}
         onToggleConnectionMode={toggleConnectionMode}
         isConnectionMode={isConnectionMode}
+        onTogglePenMode={togglePenMode}
+        isPenMode={isPenMode}
       />
 
       {isPhotoEditorOpen && selectedPhoto && (
@@ -704,6 +716,15 @@ function App() {
         type={notification.type}
         visible={notification.visible}
         onClose={() => setNotification(prev => ({ ...prev, visible: false }))}
+      />
+
+      <PenToolbar
+        visible={isAnyComponentDrawing}
+        currentColor={penColor}
+        currentWidth={penWidth}
+        onColorChange={setPenColor}
+        onWidthChange={setPenWidth}
+        onClose={() => setIsAnyComponentDrawing(false)}
       />
     </AppContainer>
   )

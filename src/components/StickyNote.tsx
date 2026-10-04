@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import { useDraggable } from '@dnd-kit/core'
-import { Pen, Edit } from 'lucide-react'
+import { Edit, Eraser } from 'lucide-react'
 import type { StickyNote, DrawingPath } from '../types'
 import DrawingOverlay from './DrawingOverlay'
-import { CommonActionButton, CommonDrawButton } from './BaseComponent'
+import { CommonActionButton, CommonClearButton } from './BaseComponent'
 
 const StickyNoteContainer = styled.div<{ 
   $rotation: number 
@@ -142,6 +142,10 @@ interface StickyNoteProps {
   isConnecting?: boolean
   isConnectionSource?: boolean
   isConnectedToSource?: boolean
+  isPenMode?: boolean
+  penColor?: string
+  penWidth?: number
+  onDrawingModeChange?: (isDrawing: boolean) => void
 }
 
 const StickyNoteComponent: React.FC<StickyNoteProps> = ({
@@ -151,9 +155,14 @@ const StickyNoteComponent: React.FC<StickyNoteProps> = ({
   onDrawingsUpdate,
   isConnecting = false,
   isConnectionSource = false,
-  isConnectedToSource = false
+  isConnectedToSource = false,
+  isPenMode = false,
+  penColor = '#000000',
+  penWidth = 2,
+  onDrawingModeChange
 }) => {
-  const [isDrawingMode, setIsDrawingMode] = useState(false)
+  // Remove local drawing state, use global pen mode
+  const isDrawingMode = isPenMode
   
   const {
     attributes,
@@ -185,13 +194,13 @@ const StickyNoteComponent: React.FC<StickyNoteProps> = ({
     }
   }
 
-  const handleDrawingToggle = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsDrawingMode(!isDrawingMode)
-  }
-
   const handleDrawingsUpdate = (drawings: unknown[]) => {
     onDrawingsUpdate(note.id, drawings as DrawingPath[])
+  }
+
+  const handleClearDrawings = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onDrawingsUpdate(note.id, [])
   }
 
   // Truncate text to fit in sticky note (approximately 150 characters)
@@ -235,12 +244,13 @@ const StickyNoteComponent: React.FC<StickyNoteProps> = ({
         <Edit size={16} />
       </CommonActionButton>
       
-      <CommonDrawButton 
-        $active={isDrawingMode}
-        onClick={handleDrawingToggle}
+      <CommonClearButton 
+        $visible={!!isPenMode && !!(note.drawings && note.drawings.length > 0)}
+        onClick={handleClearDrawings}
+        title="Clear drawings"
       >
-        <Pen size={16} />
-      </CommonDrawButton>
+        <Eraser size={16} />
+      </CommonClearButton>
       
       <NoteText>{displayText}</NoteText>
       
@@ -254,6 +264,8 @@ const StickyNoteComponent: React.FC<StickyNoteProps> = ({
         drawings={note.drawings || []}
         isDrawingMode={isDrawingMode}
         onDrawingsChange={handleDrawingsUpdate}
+        penColor={penColor}
+        penWidth={penWidth}
       />
     </StickyNoteContainer>
   )

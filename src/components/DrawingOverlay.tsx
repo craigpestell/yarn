@@ -15,80 +15,25 @@ const DrawingContainer = styled.div<{ $isDrawing: boolean }>`
   cursor: ${props => props.$isDrawing ? 'crosshair' : 'default'};
 `
 
-const DrawingControls = styled.div<{ $visible: boolean }>`
-  position: absolute;
-  top: -40px;
-  right: 0;
-  background: rgba(0, 0, 0, 0.8);
-  border-radius: 6px;
-  padding: 6px;
-  display: ${props => props.$visible ? 'flex' : 'none'};
-  gap: 6px;
-  align-items: center;
-  z-index: 101;
-`
-
-const ColorButton = styled.button<{ $color: string; $active: boolean }>`
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid ${props => props.$active ? '#fff' : 'transparent'};
-  background: ${props => props.$color};
-  cursor: pointer;
-  
-  &:hover {
-    border-color: #ccc;
-  }
-`
-
-const StrokeButton = styled.button<{ $active: boolean }>`
-  background: ${props => props.$active ? '#4a5568' : 'transparent'};
-  color: white;
-  border: 1px solid #666;
-  border-radius: 3px;
-  padding: 2px 6px;
-  font-size: 10px;
-  cursor: pointer;
-  
-  &:hover {
-    background: #4a5568;
-  }
-`
-
-const ClearButton = styled.button`
-  background: #e53e3e;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  padding: 2px 6px;
-  font-size: 10px;
-  cursor: pointer;
-  
-  &:hover {
-    background: #c53030;
-  }
-`
-
 interface DrawingOverlayProps {
   width: number
   height: number
   drawings: unknown[]
   isDrawingMode: boolean
   onDrawingsChange: (drawings: unknown[]) => void
+  penColor?: string
+  penWidth?: number
 }
-
-const colors = ['#000000', '#e53e3e', '#3182ce', '#38a169', '#d69e2e', '#805ad5', '#ec4899']
-const strokeWidths = [2, 4, 6]
 
 const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
   width,
   height,
   drawings,
   isDrawingMode,
-  onDrawingsChange
+  onDrawingsChange,
+  penColor = '#000000',
+  penWidth = 2
 }) => {
-  const [currentColor, setCurrentColor] = useState('#000000')
-  const [currentStrokeWidth, setCurrentStrokeWidth] = useState(2)
   const [isDrawing, setIsDrawing] = useState(false)
   const [currentPath, setCurrentPath] = useState<number[]>([])
   const stageRef = useRef(null)
@@ -123,43 +68,16 @@ const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
       const newPath: DrawingPath = {
         id: `path-${Date.now()}`,
         points: currentPath,
-        color: currentColor,
-        strokeWidth: currentStrokeWidth
+        color: penColor,
+        strokeWidth: penWidth
       }
       onDrawingsChange([...drawings, newPath])
     }
     setCurrentPath([])
-  }, [isDrawing, isDrawingMode, currentPath, currentColor, currentStrokeWidth, drawings, onDrawingsChange])
-
-  const clearDrawings = useCallback(() => {
-    onDrawingsChange([])
-  }, [onDrawingsChange])
+  }, [isDrawing, isDrawingMode, currentPath, penColor, penWidth, drawings, onDrawingsChange])
 
   return (
     <DrawingContainer $isDrawing={isDrawingMode}>
-      <DrawingControls $visible={isDrawingMode}>
-        {colors.map(color => (
-          <ColorButton
-            key={color}
-            $color={color}
-            $active={currentColor === color}
-            onClick={() => setCurrentColor(color)}
-          />
-        ))}
-        {strokeWidths.map(width => (
-          <StrokeButton
-            key={width}
-            $active={currentStrokeWidth === width}
-            onClick={() => setCurrentStrokeWidth(width)}
-          >
-            {width}px
-          </StrokeButton>
-        ))}
-        <ClearButton onClick={clearDrawings}>
-          Clear
-        </ClearButton>
-      </DrawingControls>
-      
       <Stage
         ref={stageRef}
         width={width}
@@ -189,8 +107,8 @@ const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
           {isDrawing && currentPath.length > 0 && (
             <Line
               points={currentPath}
-              stroke={currentColor}
-              strokeWidth={currentStrokeWidth}
+              stroke={penColor}
+              strokeWidth={penWidth}
               tension={0.5}
               lineCap="round"
               lineJoin="round"

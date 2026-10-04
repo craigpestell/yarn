@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Plus, Move, Link, StickyNote, FileText, File, Save, FolderOpen, Image } from 'lucide-react'
+import { Plus, Move, Link, StickyNote, FileText, File, Save, FolderOpen, Image, Pen } from 'lucide-react'
 
 const ToolbarContainer = styled.div`
   position: fixed;
@@ -145,9 +145,22 @@ interface ToolbarProps {
   onLoadBoard: () => void
   onToggleConnectionMode: () => void
   isConnectionMode: boolean
+  onTogglePenMode: () => void
+  isPenMode: boolean
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({ onAddPhoto, onAddNote, onAddWanted, onAddPaper, onSaveBoard, onLoadBoard, onToggleConnectionMode, isConnectionMode }) => {
+const Toolbar: React.FC<ToolbarProps> = ({ 
+  onAddPhoto, 
+  onAddNote, 
+  onAddWanted, 
+  onAddPaper, 
+  onSaveBoard, 
+  onLoadBoard, 
+  onToggleConnectionMode, 
+  isConnectionMode,
+  onTogglePenMode,
+  isPenMode 
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const toggleMenu = () => {
@@ -208,6 +221,15 @@ const Toolbar: React.FC<ToolbarProps> = ({ onAddPhoto, onAddNote, onAddWanted, o
       <ToolButton title="Drag Mode">
         <Move size={24} />
         <ToolLabel>Drag Mode</ToolLabel>
+      </ToolButton>
+      
+      <ToolButton 
+        onClick={onTogglePenMode} 
+        $active={isPenMode}
+        title="Drawing Mode"
+      >
+        <Pen size={24} />
+        <ToolLabel>{isPenMode ? 'Exit Draw' : 'Draw'}</ToolLabel>
       </ToolButton>
       
       <ToolButton 

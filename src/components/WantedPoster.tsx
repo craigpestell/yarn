@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import { useDraggable } from '@dnd-kit/core'
-import { Pen } from 'lucide-react'
+import { Edit, Eraser } from 'lucide-react'
 import type { WantedPoster, DrawingPath } from '../types'
 import DrawingOverlay from './DrawingOverlay'
+import { CommonActionButton, CommonClearButton } from './BaseComponent'
 
 const WantedContainer = styled.div<{ 
   $rotation: number 
@@ -53,31 +54,6 @@ const WantedHeader = styled.div`
   text-align: center;
   margin-bottom: 8px;
   flex-shrink: 0;
-`
-
-const DrawButton = styled.button<{ $active: boolean }>`
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: ${props => props.$active ? '#3b82f6' : 'rgba(255, 255, 255, 0.9)'};
-  color: ${props => props.$active ? 'white' : '#374151'};
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0.8;
-  transition: all 0.2s ease;
-  z-index: 110;
-  
-  &:hover {
-    opacity: 1;
-    background: ${props => props.$active ? '#2563eb' : 'rgba(255, 255, 255, 1)'};
-    transform: scale(1.1);
-  }
 `
 
 const WantedTitle = styled.h1`
@@ -183,6 +159,10 @@ interface WantedPosterProps {
   isConnecting?: boolean
   isConnectionSource?: boolean
   isConnectedToSource?: boolean
+  isPenMode?: boolean
+  penColor?: string
+  penWidth?: number
+  onDrawingModeChange?: (isDrawing: boolean) => void
 }
 
 const WantedPosterComponent: React.FC<WantedPosterProps> = ({
@@ -192,9 +172,14 @@ const WantedPosterComponent: React.FC<WantedPosterProps> = ({
   onDrawingsUpdate,
   isConnecting = false,
   isConnectionSource = false,
-  isConnectedToSource = false
+  isConnectedToSource = false,
+  isPenMode = false,
+  penColor = '#000000',
+  penWidth = 2,
+  onDrawingModeChange
 }) => {
-  const [isDrawingMode, setIsDrawingMode] = useState(false)
+  // Remove local drawing state, use global pen mode
+  const isDrawingMode = isPenMode
   
   const {
     attributes,
@@ -226,13 +211,13 @@ const WantedPosterComponent: React.FC<WantedPosterProps> = ({
     }
   }
 
-  const handleDrawingToggle = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsDrawingMode(!isDrawingMode)
-  }
-
   const handleDrawingsUpdate = (drawings: unknown[]) => {
     onDrawingsUpdate(poster.id, drawings as DrawingPath[])
+  }
+
+  const handleClearDrawings = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onDrawingsUpdate(poster.id, [])
   }
 
   const style = {
@@ -256,12 +241,17 @@ const WantedPosterComponent: React.FC<WantedPosterProps> = ({
       $isConnectedToSource={isConnectedToSource}
       data-component="wanted"
     >
-      <DrawButton
-        $active={isDrawingMode}
-        onClick={handleDrawingToggle}
+      <CommonActionButton onClick={onClick}>
+        <Edit size={16} />
+      </CommonActionButton>
+      
+      <CommonClearButton 
+        $visible={!!isPenMode && !!(poster.drawings && poster.drawings.length > 0)}
+        onClick={handleClearDrawings}
+        title="Clear drawings"
       >
-        <Pen />
-      </DrawButton>
+        <Eraser size={16} />
+      </CommonClearButton>
       
       <WantedHeader>
         <WantedTitle>WANTED</WantedTitle>
@@ -309,6 +299,8 @@ const WantedPosterComponent: React.FC<WantedPosterProps> = ({
         drawings={poster.drawings || []}
         isDrawingMode={isDrawingMode}
         onDrawingsChange={handleDrawingsUpdate}
+        penColor={penColor}
+        penWidth={penWidth}
       />
     </WantedContainer>
   )

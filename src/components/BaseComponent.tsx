@@ -68,3 +68,26 @@ export const CommonDrawButton = styled.button<{ $active: boolean }>`
     transform: scale(1.1);
   }
 `
+
+export const CommonClearButton = styled.button<{ $visible: boolean }>`
+  position: absolute;
+  top: 8px;
+  right: 72px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  z-index: 105;
+  opacity: ${props => props.$visible ? 1 : 0};
+  pointer-events: ${props => props.$visible ? 'auto' : 'none'};
+  transform: ${props => props.$visible ? 'scale(1)' : 'scale(0.8)'};
+
+  &:hover {
+    background: #dc2626;
+    transform: ${props => props.$visible ? 'scale(1.1)' : 'scale(0.8)'};
+  }
+`

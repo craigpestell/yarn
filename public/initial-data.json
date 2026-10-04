@@ -1,0 +1,315 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2025-07-21T15:30:00.000Z",
+  "title": "Jeffrey Epstein Conspiracy Board",
+  "photos": [
+    {
+      "id": "epstein-main",
+      "title": "Jeffrey Epstein",
+      "url": "https://en.wikipedia.org/wiki/Jeffrey_Epstein",
+      "notes": "Financier, convicted sex offender. Found dead in federal custody August 10, 2019. Official cause: suicide by hanging. Many questions remain...",
+      "x": 400,
+      "y": 200,
+      "imageUrl": "https://i.abcnewsfe.com/a/62e523b1-5c89-4f82-80f7-06a7f8b18fd4/Jeffrey-Epstein-ap-gmh-240104_1704386953481_hpMain_16x9.jpg?w=1500",
+      "rotation": -2
+    },
+    {
+      "id": "little-saint-james",
+      "title": "Little Saint James Island",
+      "url": "https://en.wikipedia.org/wiki/Little_Saint_James,_U.S._Virgin_Islands",
+      "notes": "Epstein's private island in the US Virgin Islands. Nicknamed 'Pedophile Island' by locals. Site of alleged trafficking activities. Strange temple structure on highest point.",
+      "x": 100,
+      "y": 100,
+      "imageUrl": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop&crop=center",
+      "rotation": 5
+    },
+    {
+      "id": "ghislaine-maxwell",
+      "title": "Ghislaine Maxwell",
+      "url": "https://en.wikipedia.org/wiki/Ghislaine_Maxwell",
+      "notes": "British socialite, Epstein's alleged co-conspirator. Daughter of media mogul Robert Maxwell. Convicted of sex trafficking in 2021. Key figure in recruitment network.",
+      "x": 700,
+      "y": 150,
+      "imageUrl": "https://images.unsplash.com/photo-1494790108755-2616c727e67b?w=400&h=300&fit=crop&crop=face",
+      "rotation": -4
+    },
+    {
+      "id": "prince-andrew",
+      "title": "Prince Andrew",
+      "url": "https://en.wikipedia.org/wiki/Prince_Andrew,_Duke_of_York",
+      "notes": "Duke of York, member of British Royal Family. Accused by Virginia Giuffre of sexual assault. Settled civil case out of court for undisclosed sum. Stepped back from royal duties.",
+      "x": 600,
+      "y": 400,
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&crop=center",
+      "rotation": 3
+    },
+    {
+      "id": "bill-clinton",
+      "title": "Bill Clinton",
+      "url": "https://en.wikipedia.org/wiki/Bill_Clinton",
+      "notes": "42nd President of the United States. Flew on Epstein's private jet multiple times. Claims friendship was limited. Photos exist of them together at various events.",
+      "x": 200,
+      "y": 450,
+      "imageUrl": "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop&crop=center",
+      "rotation": -6
+    },
+    {
+      "id": "metropolitan-correctional",
+      "title": "Metropolitan Correctional Center",
+      "url": "https://en.wikipedia.org/wiki/Metropolitan_Correctional_Center,_New_York",
+      "notes": "Federal detention facility in NYC where Epstein died. Known security issues, understaffing. Camera malfunctions on night of death. Guards allegedly sleeping.",
+      "x": 800,
+      "y": 300,
+      "imageUrl": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&h=300&fit=crop&crop=center",
+      "rotation": 7
+    },
+    {
+      "id": "black-book",
+      "title": "Epstein's Black Book",
+      "url": "https://en.wikipedia.org/wiki/Jeffrey_Epstein",
+      "notes": "Contact list containing names of politicians, celebrities, academics, and business leaders. Over 1,000 names. Questions about who knew what and when.",
+      "x": 150,
+      "y": 300,
+      "imageUrl": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=300&fit=crop&crop=center",
+      "rotation": -8
+    },
+    {
+      "id": "lolita-express",
+      "title": "Lolita Express",
+      "url": "https://en.wikipedia.org/wiki/Jeffrey_Epstein",
+      "notes": "Epstein's private Boeing 727 aircraft. Flight logs show numerous high-profile passengers. Used to transport guests to Little Saint James Island.",
+      "x": 950,
+      "y": 100,
+      "imageUrl": "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=300&fit=crop&crop=center",
+      "rotation": 4
+    }
+  ],
+  "notes": [
+    {
+      "id": "note-timeline",
+      "text": "Key Timeline:\n2005 - First allegations surface\n2008 - Plea deal (18 months)\n2019 - Arrested again\nAug 10, 2019 - Found dead\n\nWhy the lenient 2008 deal?",
+      "x": 50,
+      "y": 50,
+      "color": "#fef08a",
+      "rotation": -5
+    },
+    {
+      "id": "note-questions",
+      "text": "Unanswered Questions:\n• Who else was involved?\n• What happened to client list?\n• Why were cameras off?\n• Who had motive?\n• Cover-up or incompetence?",
+      "x": 850,
+      "y": 450,
+      "color": "#fed7aa",
+      "rotation": 3
+    },
+    {
+      "id": "note-connections",
+      "text": "Powerful connections:\n• Politicians (both parties)\n• Royalty\n• Tech billionaires\n• Hollywood elite\n• Academic institutions",
+      "x": 500,
+      "y": 50,
+      "color": "#dcfce7",
+      "rotation": -2
+    },
+    {
+      "id": "note-money-trail",
+      "text": "Financial Questions:\n• Source of wealth unclear\n• Offshore accounts\n• Shell companies\n• Real estate holdings\n• Who funded operations?",
+      "x": 300,
+      "y": 600,
+      "color": "#e0e7ff",
+      "rotation": 6
+    },
+    {
+      "id": "note-victims",
+      "text": "Victim accounts:\n• Virginia Giuffre\n• Annie Farmer\n• Maria Farmer\n• Chauntae Davies\n\nMany more came forward",
+      "x": 700,
+      "y": 550,
+      "color": "#fce7f3",
+      "rotation": -4
+    }
+  ],
+  "wantedPosters": [
+    {
+      "id": "wanted-maxwell",
+      "name": "Ghislaine Maxwell",
+      "alias": "The Socialite",
+      "crime": "Sex Trafficking, Conspiracy",
+      "description": "British citizen, 5'7\", former socialite. Convicted accomplice in trafficking scheme. Currently serving 20-year sentence.",
+      "reward": "CAPTURED",
+      "x": 1000,
+      "y": 200,
+      "imageUrl": "https://images.unsplash.com/photo-1494790108755-2616c727e67b?w=400&h=400&fit=crop&crop=face",
+      "rotation": -3
+    },
+    {
+      "id": "wanted-accomplices",
+      "name": "Unknown Accomplices",
+      "alias": "The Network",
+      "crime": "Trafficking, Conspiracy, Obstruction",
+      "description": "Additional co-conspirators mentioned in court documents. Identity protected or unknown. Investigation ongoing.",
+      "reward": "INFORMATION SOUGHT",
+      "x": 50,
+      "y": 500,
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=center",
+      "rotation": 5
+    }
+  ],
+  "papers": [
+    {
+      "id": "paper-evidence",
+      "content": "Evidence List:\n\n• Flight logs from 'Lolita Express'\n• Black book with contact information\n• Victim testimonies under oath\n• Financial records (partial)\n• Property deeds for island\n• Prison surveillance footage (missing)\n• Autopsy report\n• Guard statements\n\nMissing/Sealed:\n• Client videos alleged by victims\n• Complete financial records\n• Additional witness testimonies\n• Full scope of network",
+      "x": 600,
+      "y": 600,
+      "rotation": 2
+    },
+    {
+      "id": "paper-suspicious",
+      "content": "Suspicious Circumstances:\n\nDeath Scene:\n✗ Guards fell asleep (both)\n✗ Camera malfunction at crucial time\n✗ Cell mate removed day before\n✗ Previous suicide attempt 3 weeks prior\n✗ Taken off suicide watch\n\nAutopsy Findings:\n• Hyoid bone broken (unusual for hanging)\n• Multiple neck fractures\n• Medical examiner questions ruling\n\nMotives for Silence:\n• Powerful people implicated\n• International embarrassment\n• Criminal prosecution avoidance",
+      "x": 100,
+      "y": 700,
+      "rotation": -6
+    },
+    {
+      "id": "paper-network",
+      "content": "Network Analysis:\n\nCore Circle:\n• Jeffrey Epstein (deceased)\n• Ghislaine Maxwell (convicted)\n• Unknown recruiters/handlers\n\nHigh-Profile Associates:\n• Politicians (various countries)\n• Business leaders\n• Scientists/Academics\n• Entertainment figures\n• Legal professionals\n\nModus Operandi:\n1. Target vulnerable young women\n2. Promise modeling/education opportunities\n3. Gradual coercion and control\n4. Transport via private aircraft\n5. Facilitate access for clients\n6. Maintain silence through fear/money",
+      "x": 900,
+      "y": 600,
+      "rotation": 4
+    }
+  ],
+  "charlieImage": {
+    "id": "charlie-1",
+    "x": 50,
+    "y": 550,
+    "width": 200,
+    "height": 200
+  },
+  "connections": [
+    {
+      "id": "connection-epstein-maxwell",
+      "fromItemId": "epstein-main",
+      "toItemId": "ghislaine-maxwell",
+      "fromItemType": "photo",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-epstein-island",
+      "fromItemId": "epstein-main",
+      "toItemId": "little-saint-james",
+      "fromItemType": "photo",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-epstein-prison",
+      "fromItemId": "epstein-main",
+      "toItemId": "metropolitan-correctional",
+      "fromItemType": "photo",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-maxwell-andrew",
+      "fromItemId": "ghislaine-maxwell",
+      "toItemId": "prince-andrew",
+      "fromItemType": "photo",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-epstein-clinton",
+      "fromItemId": "epstein-main",
+      "toItemId": "bill-clinton",
+      "fromItemType": "photo",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-clinton-plane",
+      "fromItemId": "bill-clinton",
+      "toItemId": "lolita-express",
+      "fromItemType": "photo",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-plane-island",
+      "fromItemId": "lolita-express",
+      "toItemId": "little-saint-james",
+      "fromItemType": "photo",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-blackbook-connections",
+      "fromItemId": "black-book",
+      "toItemId": "note-connections",
+      "fromItemType": "photo",
+      "toItemType": "note",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-timeline-epstein",
+      "fromItemId": "note-timeline",
+      "toItemId": "epstein-main",
+      "fromItemType": "note",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-questions-prison",
+      "fromItemId": "note-questions",
+      "toItemId": "metropolitan-correctional",
+      "fromItemType": "note",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-victims-andrew",
+      "fromItemId": "note-victims",
+      "toItemId": "prince-andrew",
+      "fromItemType": "note",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-money-blackbook",
+      "fromItemId": "note-money-trail",
+      "toItemId": "black-book",
+      "fromItemType": "note",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-evidence-paper",
+      "fromItemId": "epstein-main",
+      "toItemId": "paper-evidence",
+      "fromItemType": "photo",
+      "toItemType": "paper",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-suspicious-prison",
+      "fromItemId": "paper-suspicious",
+      "toItemId": "metropolitan-correctional",
+      "fromItemType": "paper",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-network-maxwell",
+      "fromItemId": "paper-network",
+      "toItemId": "ghislaine-maxwell",
+      "fromItemType": "paper",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    },
+    {
+      "id": "connection-wanted-maxwell",
+      "fromItemId": "wanted-maxwell",
+      "toItemId": "ghislaine-maxwell",
+      "fromItemType": "wanted",
+      "toItemType": "photo",
+      "color": "#e53e3e"
+    }
+  ]
+}
