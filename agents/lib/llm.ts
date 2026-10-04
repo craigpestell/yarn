@@ -64,9 +64,12 @@ export const DISALLOWED_TOOLS = [
 
 export type GateDecision = { allow: true } | { allow: false; reason: string }
 
-/** Pure gate: WebSearch passes, WebFetch only for public https URLs (same checks as the validator probe), all else denied. */
+/**
+ * Pure gate: WebSearch passes, WebFetch only for public https URLs (same checks as the validator probe), and the SDK's own
+ * StructuredOutput tool (how the JSON-schema result is returned; no side effects) passes. All else is denied.
+ */
 export async function gateTool(toolName: string, input: unknown, lookup?: Lookup): Promise<GateDecision> {
-  if (toolName === 'WebSearch') return { allow: true }
+  if (toolName === 'WebSearch' || toolName === 'StructuredOutput') return { allow: true }
   if (toolName === 'WebFetch') {
     const url = typeof input === 'object' && input !== null && 'url' in input && typeof input.url === 'string' ? input.url : ''
     return (await isSafeFetchTarget(url, lookup)) ? { allow: true } : { allow: false, reason: 'WebFetch is limited to public https URLs' }
