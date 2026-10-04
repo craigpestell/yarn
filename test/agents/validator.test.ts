@@ -34,11 +34,6 @@ describe('validateBoard', () => {
     ['widget without sources', doc([note('a', [])]), 'ungrounded'],
     ['localhost source', doc([note('a', [src('https://localhost/x')])]), 'unsafe_url'],
     ['private ip source', doc([note('a', [src('https://10.0.0.5/x')])]), 'unsafe_url'],
-    ['news photo hotlink', doc([photo('b', 'https://cdn.news.example/p.jpg', [src(), CC])]), 'unlicensed_image'],
-    ['storage path image', doc([photo('b', 'bucket/uid/pic.png', [src(), CC])]), 'unlicensed_image'],
-    ['allowed host but no licence record', doc([photo('b', IMG, [src()])]), 'unlicensed_image'],
-    ['licence without attribution', doc([photo('b', IMG, [src(), src('https://commons.wikimedia.org/wiki/File:A.jpg', { license: 'CC0' })])]), 'unlicensed_image'],
-    ['non-free licence', doc([photo('b', IMG, [src('https://commons.wikimedia.org/wiki/File:A.jpg', { license: 'All rights reserved', attribution: 'X' })])]), 'unlicensed_image'],
   ]
   it.each(bad)('rejects: %s', async (_name, input, code) => {
     const res = await validateBoard(input, { resolver: allResolve })
@@ -75,9 +70,10 @@ describe('validateBoard', () => {
   it('rejects an image or licence url with a non-default port', async () => {
     const bad = src('https://commons.wikimedia.org:8443/wiki/File:A.jpg', { license: 'CC0', attribution: 'A' })
     const res = await validateBoard(doc([photo('b', IMG, [src(), bad])]), { resolver: allResolve })
-    expect(res.ok).toBe(false)
+    expect(res.warnings.map((w) => w.code)).toContain('image_dropped')
     const res2 = await validateBoard(doc([photo('b', 'https://upload.wikimedia.org:8443/a.jpg', [src(), CC])]), { resolver: allResolve })
-    expect(res2.ok).toBe(false)
+    expect(res2.warnings.map((w) => w.code)).toContain('image_dropped')
+    expect(JSON.stringify(res2.doc)).not.toContain(':8443')
   })
 
   it('a url that is both claim source and image stays fatal', async () => {
@@ -110,16 +106,36 @@ describe('validateBoard', () => {
   it.each([
     ['licence source on another host', src('https://example.org/File:A.jpg', { license: 'CC BY-SA 4.0', attribution: 'A' })],
     ['licence source on a lookalike host', src('https://commons.wikimedia.org.evil.example/x', { license: 'CC BY-SA 4.0', attribution: 'A' })],
-    ['licence source over http', src('http://commons.wikimedia.org/wiki/File:A.jpg', { license: 'CC BY-SA 4.0', attribution: 'A' })],
     ['NC licence on Commons', src('https://commons.wikimedia.org/wiki/File:A.jpg', { license: 'CC BY-NC 4.0', attribution: 'A' })],
-  ])('rejects image when %s', async (_n, licenceSource) => {
+  ])('drops the image (board stays valid) when %s', async (_n, licenceSource) => {
     const res = await validateBoard(doc([photo('b', IMG, [src(), licenceSource])]), { resolver: allResolve })
-    expect(res.errors.map((e) => e.code)).toContain('unlicensed_image')
+    expect(res.ok).toBe(true)
+    expect(res.warnings.map((w) => w.code)).toContain('image_dropped')
+    expect(JSON.stringify(res.doc)).not.toContain(IMG)
   })
 
-  it('rejects an image on a lookalike host', async () => {
+  it('rejects the whole board when a licence source is plain http (schema)', async () => {
+    const res = await validateBoard(doc([photo('b', IMG, [src(), src('http://commons.wikimedia.org/wiki/File:A.jpg', { license: 'CC BY-SA 4.0', attribution: 'A' })])]), { resolver: allResolve })
+    expect(res.ok).toBe(false)
+  })
+
+  it.each([
+    ['news photo hotlink', photo('b', 'https://cdn.news.example/p.jpg', [src(), CC])],
+    ['storage path image', photo('b', 'bucket/uid/pic.png', [src(), CC])],
+    ['allowed host but no licence record', photo('b', IMG, [src()])],
+    ['licence without attribution', photo('b', IMG, [src(), src('https://commons.wikimedia.org/wiki/File:A.jpg', { license: 'CC0' })])],
+    ['non-free licence', photo('b', IMG, [src('https://commons.wikimedia.org/wiki/File:A.jpg', { license: 'All rights reserved', attribution: 'X' })])],
+  ])('drops an unlicensed image with a warning: %s', async (_n, w) => {
+    const res = await validateBoard(doc([w]), { resolver: allResolve })
+    expect(res.ok).toBe(true)
+    expect(res.warnings.map((x) => x.code)).toContain('image_dropped')
+    expect(res.errors).toEqual([])
+  })
+
+  it('drops an image on a lookalike host', async () => {
     const res = await validateBoard(doc([photo('b', 'https://upload.wikimedia.org.evil.example/a.jpg', [src(), CC])]), { resolver: allResolve })
-    expect(res.errors.map((e) => e.code)).toContain('unlicensed_image')
+    expect(res.ok).toBe(true)
+    expect(res.warnings.map((w) => w.code)).toContain('image_dropped')
   })
 
   it('never calls the resolver for unsafe urls', async () => {
@@ -130,6 +146,6 @@ describe('validateBoard', () => {
 
   it('honours an injected image host allow-list', async () => {
     const res = await validateBoard(doc([photo('b', IMG, [src(), CC])]), { resolver: allResolve, imageHosts: ['other.example'] })
-    expect(res.ok).toBe(false)
+    expect(res.warnings.map((w) => w.code)).toContain('image_dropped')
   })
 })
