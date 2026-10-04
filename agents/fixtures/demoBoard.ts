@@ -4,10 +4,10 @@ import type { Doc } from '../../shared/schema'
 export const DEMO_TITLE = 'Dyatlov Pass incident'
 
 // NOT a fetch time: the content was written from memory and its sources were NOT opened or verified by code.
-// A human must open all three source URLs before publishing (Britannica may return 403 to bots).
+// A human must open all three source URLs before publishing.
 const RETRIEVED = '2026-10-04T12:00:00.000Z'
 const WIKI = { url: 'https://en.wikipedia.org/wiki/Dyatlov_Pass_incident', title: 'Dyatlov Pass incident (Wikipedia)', retrievedAt: RETRIEVED }
-const BRITANNICA = { url: 'https://www.britannica.com/event/Dyatlov-Pass-incident', title: 'Dyatlov Pass incident (Britannica)', retrievedAt: RETRIEVED }
+const HISTORY = { url: 'https://www.history.com/articles/dyatlov-pass-incident-soviet-hiker-death-mystery', title: 'The Dyatlov Pass Incident (History.com)', retrievedAt: RETRIEVED }
 const NATURE = {
   url: 'https://www.nature.com/articles/s43247-020-00081-8',
   title: 'Gaume and Puzrin, Communications Earth & Environment (2021)',
@@ -18,7 +18,7 @@ export const DEMO_DOC: Doc = {
   version: 1,
   widgets: [
     {
-      id: 'expedition', type: 'paper', x: 0, y: 0, w: 250, h: 260, rotation: -2, status: 'verified', sources: [WIKI, BRITANNICA],
+      id: 'expedition', type: 'paper', x: 0, y: 0, w: 250, h: 260, rotation: -2, status: 'verified', sources: [WIKI, HISTORY],
       data: { content: 'THE EXPEDITION\n\nIn late January 1959 a group of ten ski hikers set out in the northern Ural Mountains (then USSR). One, Yuri Yudin, turned back ill. The other nine did not return.' },
     },
     {
@@ -26,7 +26,7 @@ export const DEMO_DOC: Doc = {
       data: { color: '#fef08a', text: 'THE TENT\n\nFound on 26 Feb 1959 on the slope of Kholat Syakhl: partly collapsed and cut open from the inside. Footprints led down toward the treeline.' },
     },
     {
-      id: 'bodies', type: 'paper', x: 680, y: 0, w: 250, h: 260, rotation: 1, status: 'verified', sources: [WIKI, BRITANNICA],
+      id: 'bodies', type: 'paper', x: 680, y: 0, w: 250, h: 260, rotation: 1, status: 'verified', sources: [WIKI, HISTORY],
       data: { content: 'THE DISCOVERIES\n\nFive hikers were found near the treeline in the weeks after the tent. Four more were found in May, buried in a ravine, some with severe internal injuries.' },
     },
     {
@@ -42,7 +42,7 @@ export const DEMO_DOC: Doc = {
       data: { color: '#bbf7d0', text: 'AVALANCHE HYPOTHESIS\n\nA 2021 study argued that a delayed slab avalanche, triggered by the cut made for the tent, could explain the damage to the tent and some injuries.' },
     },
     {
-      id: 'questions', type: 'note', x: 0, y: 680, w: 200, h: 200, rotation: -2, status: 'disputed', sources: [WIKI, BRITANNICA],
+      id: 'questions', type: 'note', x: 0, y: 680, w: 200, h: 200, rotation: -2, status: 'disputed', sources: [WIKI, HISTORY],
       data: { color: '#fecaca', text: 'OPEN QUESTIONS\n\nWhy the group left the tent in cold weather with little clothing, and how some injuries occurred, are still argued over.' },
     },
     {

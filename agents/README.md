@@ -54,7 +54,7 @@ npm run seed:demo -- --publish <slug> --thumbnail demo.png   # separate step: ma
 
 A non-local `SUPABASE_URL` needs `--yes` on every non-dry-run invocation. Review the draft (and the source URLs, which the resolver must be able to reach) before publishing. Publishing is never done automatically.
 
-The fixture content was written from memory and its sources were never fetched (`retrievedAt` is not a fetch time). A human must open all three source URLs before publishing; Britannica may return 403 to bots.
+The fixture content was written from memory and its sources were never fetched (`retrievedAt` is not a fetch time). A human must open all three source URLs (Wikipedia, History.com, Nature) before publishing. Britannica was replaced because it blocks bots (403), which the URL resolver cannot pass.
 
 `--publish` refuses unless the row is owned by the curator, not deleted, titled exactly as the demo, and its stored doc validates and its widgets and edges deep-equal the fixture (an edited draft is refused; other doc fields are not compared). The thumbnail must be a PNG of at most 262144 bytes, checked before anything is uploaded. It then sets the same snapshot columns as the app's `publish_board` RPC (which cannot be called here: it needs `auth.uid()` = owner, and the curator cannot log in). The share-preview thumbnail is rendered in a browser canvas (`renderThumbnailPng`), which cannot run headlessly, so supply a PNG with `--thumbnail <file>` (uploaded to `<owner>/pub-<boardId>.png`, e.g. a 320x200 image saved from the app's thumbnail). Without it the board is public but `/api/og?image=1` returns 404 and there is no og:image.
 
