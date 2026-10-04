@@ -36,6 +36,17 @@ export function cliJsonSchema(schema: z.ZodType): Record<string, unknown> {
   return rest
 }
 
+/** Fallback when the model answers in text: parse a bare or fenced JSON object, else undefined. */
+export function parseJsonText(text: string | undefined): unknown {
+  if (!text) return undefined
+  const body = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
+  try {
+    return JSON.parse(body)
+  } catch {
+    return undefined
+  }
+}
+
 export function buildSdkEnv(source: NodeJS.ProcessEnv = process.env): Record<string, string> {
   const out: Record<string, string> = {}
   for (const k of SDK_ENV_ALLOW) {
@@ -132,18 +143,26 @@ export function createClaudeLlm({ model, budget, query = sdkQuery, env = process
         },
       })
       let structured: unknown
+      let resultText: string | undefined
       let failure: string | undefined
       try {
         for await (const msg of q) {
           if (msg.type !== 'result') continue
           budget.record(msg.num_turns, msg.total_cost_usd)
-          if (msg.subtype === 'success' && !msg.is_error) structured = msg.structured_output
+          if (msg.subtype === 'success' && !msg.is_error) {
+            structured = msg.structured_output
+            resultText = typeof msg.result === 'string' ? msg.result : undefined
+          }
           else failure = msg.subtype === 'success' ? `error result: ${String(msg.result).slice(0, 200)}` : msg.subtype
         }
       } finally {
         rmSync(cwd, { recursive: true, force: true })
       }
       if (failure) throw new Error(`${req.stage}: agent run failed (${failure})`)
+      if (structured === undefined) structured = parseJsonText(resultText)
+      if (structured === undefined) {
+        throw new Error(`${req.stage}: agent returned no structured output (result text: ${JSON.stringify((resultText ?? '').slice(0, 300))})`)
+      }
       return req.schema.parse(structured)
     },
   }
