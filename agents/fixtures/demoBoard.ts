@@ -9,7 +9,7 @@ const RETRIEVED = '2026-10-04T12:00:00.000Z'
 const WIKI = { url: 'https://en.wikipedia.org/wiki/Dyatlov_Pass_incident', title: 'Dyatlov Pass incident (Wikipedia)', retrievedAt: RETRIEVED }
 const BRITANNICA = { url: 'https://www.britannica.com/event/Dyatlov-Pass-incident', title: 'Dyatlov Pass incident (Britannica)', retrievedAt: RETRIEVED }
 const NATURE = {
-  url: 'https://www.nature.com/articles/s43247-021-00163-2',
+  url: 'https://www.nature.com/articles/s43247-020-00081-8',
   title: 'Gaume and Puzrin, Communications Earth & Environment (2021)',
   retrievedAt: RETRIEVED,
 }
