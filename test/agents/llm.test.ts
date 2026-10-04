@@ -143,3 +143,12 @@ describe('structured output fallback', () => {
     await expect(bad.complete(req)).rejects.toThrow(/no structured output.*I could not/)
   })
 })
+
+describe('gateTool StructuredOutput', () => {
+  it('allows the SDK structured-output tool but still denies unknown tools', async () => {
+    const { gateTool } = await import('../../agents/lib/llm')
+    expect(await gateTool('StructuredOutput', {})).toEqual({ allow: true })
+    expect((await gateTool('Bash', { command: 'ls' })).allow).toBe(false)
+    expect((await gateTool('structuredoutput', {})).allow).toBe(false)
+  })
+})
