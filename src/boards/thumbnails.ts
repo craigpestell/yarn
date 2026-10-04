@@ -5,6 +5,25 @@ import type { Doc } from '../../shared/schema'
 export const THUMB_BUCKET = 'thumbnails'
 export const thumbnailPath = (ownerId: string, boardId: string): string => `${ownerId}/${boardId}.png`
 
+/** Snapshot thumbnail taken at publish time; readable by anyone while the board is published public/unlisted. */
+export const publishedThumbnailPath = (ownerId: string, boardId: string): string => `${ownerId}/pub-${boardId}.png`
+
+export async function uploadPublishedThumbnail(client: SupabaseClient, ownerId: string, boardId: string, png: Blob): Promise<void> {
+  const { error } = await client.storage
+    .from(THUMB_BUCKET)
+    .upload(publishedThumbnailPath(ownerId, boardId), png, { upsert: true, contentType: 'image/png' })
+  if (error) throw new Error(error.message)
+}
+
+/** Best effort: delete the published thumbnail so a stale image is never served. Never throws. */
+export async function removePublishedThumbnail(client: SupabaseClient, ownerId: string, boardId: string): Promise<void> {
+  try {
+    await client.storage.from(THUMB_BUCKET).remove([publishedThumbnailPath(ownerId, boardId)])
+  } catch {
+    // ignore: the storage policy already hides it unless the board is published public/unlisted
+  }
+}
+
 export async function uploadThumbnail(client: SupabaseClient, ownerId: string, boardId: string, png: Blob): Promise<void> {
   const { error } = await client.storage
     .from(THUMB_BUCKET)

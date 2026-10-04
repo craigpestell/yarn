@@ -16,7 +16,7 @@ import { useBoard, type ConnectState, type Selection } from './store'
 const pinHandles = (w: number): NodeHandle[] =>
   (['source', 'target'] as const).map((type) => ({ id: PIN_HANDLE, type, position: Position.Top, x: w / 2 - 1, y: 10, width: 2, height: 2 }))
 
-export function toNodes(doc: Doc, sel: Selection | null, connect: ConnectState): WidgetNode[] {
+export function toNodes(doc: Doc, sel: Selection | null, connect: ConnectState, readOnly = false): WidgetNode[] {
   const near = connect.active && connect.source ? connectedTo(doc, connect.source) : new Set<string>()
   return doc.widgets.map((widget) => ({
     id: widget.id,
@@ -33,6 +33,7 @@ export function toNodes(doc: Doc, sel: Selection | null, connect: ConnectState):
       widget,
       role: connect.source === widget.id ? 'source' : near.has(widget.id) ? 'connected' : null,
       selected: sel?.kind === 'widget' && sel.id === widget.id,
+      readOnly,
     },
   }))
 }
@@ -57,19 +58,19 @@ export function toEdges(doc: Doc, sel: Selection | null): YarnEdgeType[] {
  * setup (no onNodesChange), so the Controls fit button and the `fitView` prop silently do nothing in a browser.
  * Compute the viewport ourselves instead.
  */
-export function useFit() {
+export function useFit(getWidgets: () => Doc['widgets'] = () => useBoard.getState().doc.widgets) {
   const store = useStoreApi()
   const rf = useReactFlow()
   return useCallback(() => {
     // Bounds come from the doc (not xyflow's lookup) so a fit right after a board change is not a tick stale.
-    const widgets = useBoard.getState().doc.widgets
+    const widgets = getWidgets()
     const { width, height } = store.getState()
     if (!widgets.length) return true
     if (!width || !height) return false // container not measured yet
     const bounds = getNodesBounds(widgets.map((w) => ({ id: w.id, position: { x: w.x, y: w.y }, width: w.w, height: w.h, data: {} })))
     void rf.setViewport(getViewportForBounds(bounds, width, height, ZOOM_MIN, Math.min(ZOOM_MAX, 1.5), 0.1))
     return true
-  }, [rf, store])
+  }, [rf, store, getWidgets])
 }
 
 function FitControls() {

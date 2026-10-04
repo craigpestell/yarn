@@ -1,4 +1,5 @@
 import { LIMITS, type Widget, type WidgetType } from '../../shared/schema'
+import { WidgetLinkEditor } from '../links/WidgetLinkEditor'
 import { widgetLabel } from './docOps'
 import { SourcesEditor } from './SourcesEditor'
 import { useBoard } from './store'
@@ -62,6 +63,7 @@ function WidgetFields({ w }: { w: Widget }) {
         Locked (cannot be moved)
       </label>
       <SourcesEditor widget={w} />
+      <WidgetLinkEditor widgetId={w.id} />
     </>
   )
 }
