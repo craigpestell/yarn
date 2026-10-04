@@ -20,7 +20,7 @@
 
 - Site URL: the production origin (for example `https://<your-domain>`).
 - Redirect URLs: the production origin plus `/**` (covers `/login`, `/reset`, `/boards`), and the Vercel preview pattern if previews should sign in. Keep `http://127.0.0.1:*` only in the local config, not in production.
-- Google and GitHub: create OAuth apps whose callback is `https://<project-ref>.supabase.co/auth/v1/callback`; enter the client id and secret in the Supabase dashboard (never in the repo).
+- Google (and optionally GitHub, shown only when `VITE_OAUTH_GITHUB=true`): create OAuth apps whose callback is `https://<project-ref>.supabase.co/auth/v1/callback`; enter the client id and secret in the Supabase dashboard (never in the repo).
 - REQUIRED: "Confirm email" stays ON in production. Board invites match the caller's auth email only when `email_confirmed_at` is set; turning confirmations off lets someone register an unconfirmed account with a victim's address and claim their invites.
 - REQUIRED: only enable OAuth providers that return verified emails (Google and GitHub primary-verified emails). Do not add a provider that can return an unverified email.
 

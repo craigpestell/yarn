@@ -38,13 +38,13 @@ describe('login', () => {
     expect(screen.getByLabelText('Email')).toHaveAttribute('aria-invalid', 'true')
     expect(where()).toBe('/login')
   })
-  it('wires Google and GitHub OAuth', async () => {
+  it('wires Google OAuth and hides GitHub by default', async () => {
     const f = fakeClient({ session: null })
     const user = userEvent.setup()
     renderApp(f.client, '/login')
     await user.click(await screen.findByRole('button', { name: 'Continue with Google' }))
-    await user.click(screen.getByRole('button', { name: 'Continue with GitHub' }))
-    expect(f.auth.signInWithOAuth.mock.calls.map((c) => (c as unknown as [{ provider: string }])[0].provider)).toEqual(['google', 'github'])
+    expect(screen.queryByRole('button', { name: 'Continue with GitHub' })).toBeNull()
+    expect(f.auth.signInWithOAuth.mock.calls.map((c) => (c as unknown as [{ provider: string }])[0].provider)).toEqual(['google'])
   })
   it('redirects protected routes to login when logged out', async () => {
     renderApp(fakeClient({ session: null }).client, '/boards')
@@ -169,4 +169,10 @@ it('turns an OAuth error in the URL into a message', async () => {
   expect(oauthErrorFrom('?error=server_error&error_description=Unable+to+exchange+external+code', '')).toBe('Sign-in failed: Unable to exchange external code')
   expect(oauthErrorFrom('', '#error=access_denied')).toBe('Sign-in failed: access_denied')
   expect(oauthErrorFrom('?x=1', '')).toBeNull()
+})
+
+it('offers GitHub only when enabled', async () => {
+  const { oauthProviders } = await import('../../src/auth/OAuthButtons')
+  expect(oauthProviders(false).map((p) => p.id)).toEqual(['google'])
+  expect(oauthProviders(true).map((p) => p.id)).toEqual(['google', 'github'])
 })

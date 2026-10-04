@@ -16,7 +16,7 @@ export function PrivacyPage() {
 
       <h2>What we collect</h2>
       <ul>
-        <li><strong>Account details.</strong> Your email address and a password (stored only as a hash). If you sign in with Google or GitHub, we receive your email address and basic profile from that provider. We never see your provider password.</li>
+        <li><strong>Account details.</strong> Your email address and a password (stored only as a hash). If you sign in with Google, we receive your email address and basic profile from that provider. We never see your provider password.</li>
         <li><strong>Your boards.</strong> The content you create: notes, links, sources, images you add, layout, titles, and the visibility you choose (private, unlisted or public).</li>
         <li><strong>Sharing.</strong> If you share a board with someone by email, we store that email address against the board.</li>
         <li><strong>Technical data.</strong> Our hosting provider processes standard request data such as IP address and browser type to serve the site and keep it secure.</li>
@@ -31,7 +31,7 @@ export function PrivacyPage() {
         <li>Supabase: database, sign-in and file storage.</li>
         <li>Vercel: website hosting.</li>
         <li>Resend: sending account emails.</li>
-        <li>Google or GitHub, only if you choose to sign in with them.</li>
+        <li>Google, only if you choose to sign in with them.</li>
       </ul>
 
       <h2>Keeping and deleting data</h2>
