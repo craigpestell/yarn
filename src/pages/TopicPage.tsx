@@ -3,7 +3,6 @@ import { Link, useParams } from 'react-router'
 import { useAuth } from '../auth/AuthProvider'
 import { getTopic, listTopicBoards } from '../topics/api'
 import type { Topic, TopicBoard } from '../topics/schemas'
-import { NavBar } from './NavBar'
 
 type State = { kind: 'loading' } | { kind: 'missing' } | { kind: 'error'; message: string } | { kind: 'ready'; topic: Topic; boards: TopicBoard[] }
 
@@ -27,7 +26,6 @@ export function TopicPage() {
 
   return (
     <>
-      <NavBar />
       <main className="page">
         {state.kind === 'loading' && <p role="status">Loading...</p>}
         {state.kind === 'error' && <p role="alert">{state.message}</p>}

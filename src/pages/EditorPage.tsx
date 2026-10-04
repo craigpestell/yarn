@@ -11,7 +11,6 @@ import { fetchLinks } from '../links/api'
 import { LinksContext, type LinksValue } from '../links/LinksContext'
 import type { LinkView } from '../links/schemas'
 import { PublishPanel } from '../publish/PublishPanel'
-import { NavBar } from './NavBar'
 
 /** Owner editor for a stored board at /edit/:id. */
 export function EditorPage() {
@@ -19,7 +18,6 @@ export function EditorPage() {
   if (!parsed.success) {
     return (
       <>
-        <NavBar />
         <main className="page"><h1>Board not found</h1><p role="alert">There is no board at this address.</p></main>
       </>
     )
@@ -54,7 +52,6 @@ function ServerEditor({ id }: { id: string }) {
   if (phase.kind !== 'ready') {
     return (
       <>
-        <NavBar />
         {phase.kind === 'error' ? <p role="alert" className="page">{phase.message}</p> : <p role="status" className="page">Loading board...</p>}
       </>
     )
@@ -69,7 +66,6 @@ function ServerEditor({ id }: { id: string }) {
             <LeaveGuard active={unsaveable} />
           </>
         }
-        nav={<NavBar />}
         tools={client && user && slug ? <PublishPanel client={client} ownerId={user.id} boardId={id} slug={slug} /> : null}
       />
     </LinksContext.Provider>

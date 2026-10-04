@@ -1,5 +1,5 @@
-import { Link, NavLink, Outlet } from 'react-router'
-import { useAuth } from '../auth/AuthProvider'
+import { Outlet } from 'react-router'
+import { NavBar } from './NavBar'
 
 const EMAIL_RE = /^[^\s@<>"',;:()[\]\\?&#]+@[^\s@<>"',;:()[\]\\]+\.[^\s@<>"',;:()[\]\\]+$/
 
@@ -18,26 +18,11 @@ export function Footer({ email = contactEmail(import.meta.env.VITE_CONTACT_EMAIL
   )
 }
 
-/** Site-wide nav so every page (privacy, terms, reader...) has a way back to the boards. */
-export function SiteHeader() {
-  const { user } = useAuth()
-  return (
-    <header className="site-header">
-      <Link to={user ? '/boards' : '/'} className="site-brand">Yarns</Link>
-      <nav aria-label="Main">
-        {user && <NavLink to="/boards">My boards</NavLink>}
-        <NavLink to="/topics">Topics</NavLink>
-        {user ? <NavLink to="/account">Account</NavLink> : <NavLink to="/login">Log in</NavLink>}
-      </nav>
-    </header>
-  )
-}
-
-/** Root layout: a slim header, the routed page filling the space, and a small footer. */
+/** Root layout: the nav bar, the routed page filling the space, and a small footer. */
 export function Layout() {
   return (
     <div className="site">
-      <SiteHeader />
+      <NavBar />
       <div className="site-body"><Outlet /></div>
       <Footer />
     </div>
