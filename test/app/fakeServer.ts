@@ -15,6 +15,8 @@ export interface SBoard {
   doc: unknown
   publishedDoc: unknown | null
   publishedTitle: string | null
+  ownerId?: string
+  forkedFrom?: string
 }
 
 export interface Link {
@@ -28,10 +30,16 @@ export interface Link {
  * published data only, never `doc`, and a link to a board they cannot read has null title and slug.
  * Used with a real supabase-js client so tests can assert on the actual HTTP requests and responses.
  */
-export function fakeServer(boards: SBoard[], links: Record<string, Link[]>, backlinks: Record<string, { slug: string; title: string }[]> = {}) {
+export function fakeServer(
+  boards: SBoard[],
+  links: Record<string, Link[]>,
+  backlinks: Record<string, { slug: string; title: string }[]> = {},
+  opts: { forkCap?: number } = {},
+) {
   const log: Logged[] = []
   const readable = (b: SBoard | undefined) => !!b && b.publishedDoc !== null && (b.visibility === 'public' || b.visibility === 'unlisted')
   const byId = (id: string) => boards.find((b) => b.id === id)
+  let forks = 0
 
   const route = (url: URL, body: Record<string, string>): { status: number; json: unknown } => {
     const name = /\/rest\/v1\/rpc\/(\w+)/.exec(url.pathname)?.[1]
@@ -39,7 +47,7 @@ export function fakeServer(boards: SBoard[], links: Record<string, Link[]>, back
       const b = boards.find((x) => x.slug === body.p_slug)
       return {
         status: 200,
-        json: readable(b) && b ? [{ id: b.id, owner_id: '00000000-0000-4000-8000-0000000000f0', slug: b.slug, title: b.publishedTitle, visibility: b.visibility, published_revision: 1, published_doc: b.publishedDoc }] : [],
+        json: readable(b) && b ? [{ id: b.id, owner_id: b.ownerId ?? '00000000-0000-4000-8000-0000000000f0', slug: b.slug, title: b.publishedTitle, visibility: b.visibility, published_revision: 1, published_doc: b.publishedDoc }] : [],
       }
     }
     if (name === 'get_board_links') {
@@ -51,6 +59,22 @@ export function fakeServer(boards: SBoard[], links: Record<string, Link[]>, back
       return { status: 200, json: rows }
     }
     if (name === 'get_backlinks') return { status: 200, json: backlinks[body.p_board_id ?? ''] ?? [] }
+    // Same rules as the SQL: one neutral error for every failure (unreadable, missing, over the cap), the new board is private.
+    if (name === 'fork_board') {
+      const b = byId(body.p_source_id ?? '')
+      if (!readable(b) || !b || forks >= (opts.forkCap ?? 20)) return { status: 400, json: { code: 'P0001', message: 'fork unavailable', details: null, hint: null } }
+      forks++
+      const n = boards.length + 1
+      const copy: SBoard = { id: `00000000-0000-4000-8000-0000000001${String(n).padStart(2, '0')}`, slug: `fork-${String(n).padStart(12, '0')}`, title: `Fork of ${b.publishedTitle}`, visibility: 'private', doc: b.publishedDoc, publishedDoc: null, publishedTitle: null, forkedFrom: b.id }
+      boards.push(copy)
+      return { status: 200, json: [{ new_id: copy.id, new_slug: copy.slug }] }
+    }
+    if (name === 'get_fork_source') {
+      const f = byId(body.p_board_id ?? '')
+      if (!f?.forkedFrom) return { status: 200, json: [] }
+      const s = byId(f.forkedFrom)
+      return { status: 200, json: [readable(s) && s ? { source_slug: s.slug, source_title: s.publishedTitle } : { source_slug: null, source_title: null }] }
+    }
     return { status: 404, json: { message: `unexpected ${url.pathname}` } }
   }
 

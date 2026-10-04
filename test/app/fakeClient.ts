@@ -30,7 +30,10 @@ export const session = { user: { id: UID, email: 'me@example.com' } } as unknown
 type Listener = (event: string, s: Session | null) => void
 
 /** In-memory stand-in for the slice of SupabaseClient the app uses. Fails the test on unexpected calls via vi.fn. */
-export function fakeClient(opts: { rows?: Row[]; session?: Session | null; insertErrors?: { code: string; message: string }[] } = {}) {
+type RpcResult = { data: unknown; error: { message: string } | null }
+export type RpcHandlers = Record<string, (args: Record<string, unknown>) => RpcResult | Promise<RpcResult>>
+
+export function fakeClient(opts: { rows?: Row[]; session?: Session | null; insertErrors?: { code: string; message: string }[]; rpc?: RpcHandlers } = {}) {
   const insertErrors = [...(opts.insertErrors ?? [])]
   const rows = opts.rows ?? []
   let current: Session | null = opts.session === undefined ? session : opts.session
@@ -103,7 +106,10 @@ export function fakeClient(opts: { rows?: Row[]; session?: Session | null; inser
     }),
   }
   const storage = { from: vi.fn(() => bucket) }
-  const rpc = vi.fn(async () => ({ data: null, error: null }))
+  const rpc = vi.fn(async (name: string, args: Record<string, unknown> = {}): Promise<RpcResult> => {
+    const handler = opts.rpc?.[name]
+    return handler ? handler(args) : { data: null, error: null }
+  })
   const client = { auth, from, storage, rpc } as unknown as SupabaseClient
   return { client, auth, rpc, update, insert, storage, bucket, rows, emit }
 }

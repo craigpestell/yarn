@@ -1,13 +1,17 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { AuthProvider } from '../../src/auth/AuthProvider'
 import { ReaderPage } from '../../src/pages/ReaderPage'
 import { SAMPLE_DOC } from '../../src/editor/sample'
-import { fakeClient } from './fakeClient'
+import { FORK_FAILED } from '../../src/boards/fork'
+import { fakeClient, USER_ID, type RpcHandlers } from './fakeClient'
 import { fakeServer, type SBoard } from './fakeServer'
+
+vi.mock('../../src/boards/thumbnailSvg', () => ({ renderThumbnailPng: async () => new Blob(['png'], { type: 'image/png' }) }))
 
 const SECRET = 'TOP SECRET TITLE'
 const id = (n: number) => `00000000-0000-4000-8000-00000000000${n}`
@@ -108,5 +112,73 @@ describe('/b/:slug as the owner', () => {
     expect(screen.getByRole('link', { name: 'Edit this board' })).toHaveAttribute('href', `/edit/${id(1)}`)
     await waitFor(() => expect(document.body.textContent).toContain('DRAFT ONLY TEXT'))
     expect(select).toHaveBeenCalledWith('id, slug, title, deleted_at, doc', 'slug', 'mine')
+    expect(screen.queryByRole('button', { name: 'Fork' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Log in to fork' })).not.toBeInTheDocument()
+  })
+})
+
+const NEW_ID = '00000000-0000-4000-8000-0000000001aa'
+const published = { id: id(1), owner_id: id(9), slug: 'hub', title: 'Published 1', visibility: 'public', published_revision: 1, published_doc: SAMPLE_DOC }
+const signedInRpc = (over: RpcHandlers = {}): RpcHandlers => ({
+  get_published_board: () => ({ data: [published], error: null }),
+  get_board_links: () => ({ data: [], error: null }),
+  get_backlinks: () => ({ data: [], error: null }),
+  get_fork_source: () => ({ data: [], error: null }),
+  fork_board: () => ({ data: [{ new_id: NEW_ID, new_slug: 'fork-000000000001' }], error: null }),
+  ...over,
+})
+const forkedRow = { id: NEW_ID, slug: 'fork-000000000001', title: 'Fork of Published 1', visibility: 'private' as const, revision: 0, updated_at: '2026-10-03T00:00:00Z', deleted_at: null, doc: SAMPLE_DOC }
+
+describe('/b/:slug fork controls', () => {
+  it('shows "Log in to fork" to a signed-out reader and no Fork button', async () => {
+    const s = fakeServer([board(1, { slug: 'hub' })], {})
+    const { container } = page(s.client, '/b/hub')
+    expect(await screen.findByRole('link', { name: 'Log in to fork' })).toHaveAttribute('href', '/login')
+    expect(screen.queryByRole('button', { name: 'Fork' })).not.toBeInTheDocument()
+    expect(s.log.some((l) => l.url.includes('get_fork_source'))).toBe(false)
+    expect((await axe(container)).violations).toEqual([])
+  })
+
+  it('forks for a signed-in non-owner: calls the rpc, uploads the copy thumbnail and opens the editor', async () => {
+    const f = fakeClient({ rows: [{ ...forkedRow }], rpc: signedInRpc() })
+    const { container } = page(f.client, '/b/hub')
+    const btn = await screen.findByRole('button', { name: 'Fork' })
+    expect((await axe(container)).violations).toEqual([])
+    await userEvent.click(btn)
+    expect(await screen.findByText('editor')).toBeInTheDocument()
+    expect(f.rpc).toHaveBeenCalledWith('fork_board', { p_source_id: id(1) })
+    expect(f.bucket.upload).toHaveBeenCalledWith(`${USER_ID}/${NEW_ID}.png`, expect.anything(), expect.objectContaining({ contentType: 'image/png' }))
+  })
+
+  it('still navigates when the thumbnail upload fails', async () => {
+    const f = fakeClient({ rows: [{ ...forkedRow }], rpc: signedInRpc() })
+    f.bucket.upload.mockResolvedValueOnce({ error: { message: 'storage down' } } as never)
+    page(f.client, '/b/hub')
+    await userEvent.click(await screen.findByRole('button', { name: 'Fork' }))
+    expect(await screen.findByText('editor')).toBeInTheDocument()
+  })
+
+  it('shows a generic alert and stays on the page when the server rejects the fork (cap or unavailable)', async () => {
+    const f = fakeClient({ rpc: signedInRpc({ fork_board: () => ({ data: null, error: { message: 'fork unavailable' } }) }) })
+    const { container } = page(f.client, '/b/hub')
+    await userEvent.click(await screen.findByRole('button', { name: 'Fork' }))
+    expect(await screen.findByRole('alert', {}, { timeout: 2000 })).toHaveTextContent(FORK_FAILED)
+    expect(screen.queryByText('editor')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Fork' })).toBeEnabled()
+    expect(f.bucket.upload).not.toHaveBeenCalled()
+    expect((await axe(container)).violations).toEqual([])
+  })
+
+  it('labels the provenance with a link when the source is readable, without it otherwise', async () => {
+    const readable = fakeClient({ rpc: signedInRpc({ get_fork_source: () => ({ data: [{ source_slug: 'origin', source_title: 'Origin board' }], error: null }) }) })
+    const a = page(readable.client, '/b/hub')
+    expect(await screen.findByRole('link', { name: 'Origin board' })).toHaveAttribute('href', '/b/origin')
+    expect(a.container.textContent).toContain('Forked from')
+    a.unmount()
+    const hidden = fakeClient({ rpc: signedInRpc({ get_fork_source: () => ({ data: [{ source_slug: null, source_title: null }], error: null }) }) })
+    const b = page(hidden.client, '/b/hub')
+    expect(await screen.findByText('Forked from an unavailable board')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Origin board' })).not.toBeInTheDocument()
+    expect((await axe(b.container)).violations).toEqual([])
   })
 })

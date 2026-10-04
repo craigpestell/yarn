@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { BoardsError, copyTitle, createBoard, duplicateBoard, listBoards, renameBoard, restoreBoard, softDeleteBoard } from '../../src/boards/api'
+import { FORK_FAILED, ForkError, forkBoard } from '../../src/boards/fork'
 import { makeSlug } from '../../src/boards/slug'
+import { fetchForkSource } from '../../src/reader/api'
+import { fakeServer, type SBoard } from './fakeServer'
 import { fakeClient, row, USER_ID } from './fakeClient'
 
 const ID = '00000000-0000-4000-8000-000000000010'
@@ -62,5 +65,49 @@ describe('boards api', () => {
     const err = await listBoards(bad.client).catch((e: unknown) => e)
     expect(err).toBeInstanceOf(BoardsError)
     expect((err as Error).message).not.toMatch(/[{\[]/)
+  })
+})
+
+describe('fork api', () => {
+  const doc = { version: 1, widgets: [], edges: [] }
+  const sid = (n: number) => `00000000-0000-4000-8000-00000000000${n}`
+  const sb = (n: number, over: Partial<SBoard> = {}): SBoard => ({ id: sid(n), slug: `b-${n}`, title: `Live ${n}`, visibility: 'public', doc, publishedDoc: doc, publishedTitle: `Pub ${n}`, ...over })
+
+  it('parses the rpc result and returns the new id and slug', async () => {
+    const f = fakeClient({ rpc: { fork_board: () => ({ data: [{ new_id: ID, new_slug: 'fork-abc123def456' }], error: null }) } })
+    expect(await forkBoard(f.client, ID)).toEqual({ id: ID, slug: 'fork-abc123def456' })
+    expect(f.rpc).toHaveBeenCalledWith('fork_board', { p_source_id: ID })
+  })
+  it('rejects malformed results and never surfaces the server message', async () => {
+    const bad = fakeClient({ rpc: { fork_board: () => ({ data: [{ new_id: 'nope', new_slug: 'x' }], error: null }) } })
+    await expect(forkBoard(bad.client, ID)).rejects.toThrow(FORK_FAILED)
+    const err = fakeClient({ rpc: { fork_board: () => ({ data: null, error: { message: 'relation boards does not exist' } }) } })
+    const e = await forkBoard(err.client, ID).catch((x: unknown) => x)
+    expect(e).toBeInstanceOf(ForkError)
+    expect((e as Error).message).toBe(FORK_FAILED)
+  })
+  it('gives the identical error for unreadable, missing and over-cap sources and creates nothing', async () => {
+    const boards = [sb(1), sb(2, { visibility: 'private' }), sb(3, { publishedDoc: null, publishedTitle: null })]
+    const s = fakeServer(boards, {}, {}, { forkCap: 1 })
+    const messages: string[] = []
+    for (const target of [sid(2), sid(3), sid(7)]) messages.push(((await forkBoard(s.client, target).catch((x: unknown) => x)) as Error).message)
+    expect(new Set(messages)).toEqual(new Set([FORK_FAILED]))
+    expect(boards).toHaveLength(3)
+    expect((await forkBoard(s.client, sid(1))).slug).toMatch(/^fork-/)
+    const over = (await forkBoard(s.client, sid(1)).catch((x: unknown) => x)) as Error
+    expect(over.message).toBe(FORK_FAILED) // the (N+1)th fork gets the same generic error
+    expect(boards).toHaveLength(4)
+  })
+  it('reads provenance: none, readable, and unavailable without a title; a deleted source leaves no label', async () => {
+    const boards = [sb(1), sb(2, { visibility: 'private', publishedTitle: 'SECRET' }), sb(3, { forkedFrom: sid(1) }), sb(4, { forkedFrom: sid(2) }), sb(5, { forkedFrom: sid(8) })]
+    const s = fakeServer(boards, {})
+    expect(await fetchForkSource(s.client, sid(1))).toBeNull()
+    expect(await fetchForkSource(s.client, sid(3))).toEqual({ kind: 'available', slug: 'b-1', title: 'Pub 1' })
+    expect(await fetchForkSource(s.client, sid(4))).toEqual({ kind: 'unavailable' })
+    expect(JSON.stringify(s.log.map((l) => l.response))).not.toContain('SECRET')
+    const gone = fakeClient({ rpc: { get_fork_source: () => ({ data: [], error: null }) } })
+    expect(await fetchForkSource(gone.client, sid(5))).toBeNull()
+    const malformed = fakeClient({ rpc: { get_fork_source: () => ({ data: [{ source_slug: 'Bad Slug', source_title: 1 }], error: null }) } })
+    await expect(fetchForkSource(malformed.client, sid(5))).rejects.toThrow()
   })
 })
