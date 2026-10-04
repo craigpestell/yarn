@@ -29,7 +29,7 @@ export async function ensureCurator(client: SupabaseClient): Promise<{ id: strin
 export function checkTarget(url: string | undefined, yes: boolean): string {
   const host = new URL(url ?? 'https://unset.invalid').hostname
   if (!['127.0.0.1', 'localhost'].includes(host) && !yes) {
-    throw new Error('non-local Supabase target: re-run with --yes to create the curator there')
+    throw new Error('non-local Supabase target: re-run with --yes to confirm this target')
   }
   return host
 }

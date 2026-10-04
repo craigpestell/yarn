@@ -124,3 +124,12 @@ button, select, input, textarea { font: inherit; }
 .topic-tags { border: 1px solid #d6d3d1; border-radius: 4px; }
 .topic-list { list-style: none; padding: 0; }
 .topic-list h2 { margin: 0; font-size: 1.1rem; }
+
+.site { display: flex; flex-direction: column; height: 100%; }
+.site-body { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: auto; }
+/* Editor and reader fill the body exactly (flex, not height: 100%), so no scrollbar appears and layout is the same with the footer hidden. */
+/* .page has auto side margins, which stop a column-flex item stretching (align-self: stretch is ignored), so ask for the full width; max-width and the auto margins still cap and centre it. */
+.site-body > .page { width: 100%; }
+.site-body > .app { flex: 1 0 0; height: auto; min-height: 0; }
+.site-footer { padding: 4px 12px; font-size: 0.8rem; background: #1c1917; color: #d6d3d1; }
+.site-footer a { color: #fafaf9; }

@@ -42,9 +42,25 @@ Flags: `--dry-run`, `--yes` (required for a real run), `--print` (dry run: print
 
 The draft is `visibility = 'private'` with no published snapshot, so only the curator can read it. Review it in the curator account, then publish through the app.
 
+## Demo board
+
+`agents/fixtures/demoBoard.ts` is a hand-authored, neutral board (Dyatlov Pass incident, no images, every widget sourced). It passes the same validator and zod schema as pipeline drafts and never touches the network in tests.
+
+```
+npm run seed:demo -- --dry-run                  # offline validation only
+npm run seed:demo                               # validates (probes source URLs), writes a PRIVATE draft as the curator. NOT idempotent: refuses if the curator already has a board titled as the demo, unless --force (which makes another draft)
+npm run seed:demo -- --publish <slug> --thumbnail demo.png   # separate step: makes that curator board public
+```
+
+A non-local `SUPABASE_URL` needs `--yes` on every non-dry-run invocation. Review the draft (and the source URLs, which the resolver must be able to reach) before publishing. Publishing is never done automatically.
+
+The fixture content was written from memory and its sources were never fetched (`retrievedAt` is not a fetch time). A human must open all three source URLs before publishing; Britannica may return 403 to bots.
+
+`--publish` refuses unless the row is owned by the curator, not deleted, titled exactly as the demo, and its stored doc validates and its widgets and edges deep-equal the fixture (an edited draft is refused; other doc fields are not compared). The thumbnail must be a PNG of at most 262144 bytes, checked before anything is uploaded. It then sets the same snapshot columns as the app's `publish_board` RPC (which cannot be called here: it needs `auth.uid()` = owner, and the curator cannot log in). The share-preview thumbnail is rendered in a browser canvas (`renderThumbnailPng`), which cannot run headlessly, so supply a PNG with `--thumbnail <file>` (uploaded to `<owner>/pub-<boardId>.png`, e.g. a 320x200 image saved from the app's thumbnail). Without it the board is public but `/api/og?image=1` returns 404 and there is no og:image.
+
 ## Bundle check
 
-`npm run build:verify` runs the normal build and then `npm run check:bundle` (greps dist/ for service-role markers and the Agent SDK). Plain `npm run build` is unchanged for Vercel.
+`npm run build:verify` runs the normal build and then `npm run check:bundle` (greps dist/ for service-role markers and the Agent SDK) and `npm run check:fonts` (fails if dist/ or index.html mentions fonts.googleapis.com or fonts.gstatic.com). Plain `npm run build` is unchanged for Vercel.
 
 ## Tests
 
