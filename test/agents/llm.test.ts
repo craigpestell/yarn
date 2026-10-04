@@ -102,3 +102,26 @@ describe('tool gate', () => {
     expect(await hook?.(input('https://example.org/'), 't', sig)).toEqual({})
   })
 })
+
+describe('cliJsonSchema', () => {
+  it('omits $schema so the Claude Code CLI can validate it', async () => {
+    const { cliJsonSchema } = await import('../../agents/lib/llm')
+    const { z } = await import('zod')
+    const out = cliJsonSchema(z.object({ a: z.string() }))
+    expect(out).not.toHaveProperty('$schema')
+    expect(out).toMatchObject({ type: 'object' })
+  })
+})
+
+describe('createClaudeLlm error results', () => {
+  it('reports an is_error result (e.g. not logged in) instead of failing schema parse', async () => {
+    const { createClaudeLlm } = await import('../../agents/lib/llm')
+    const { z } = await import('zod')
+    const { Budget } = await import('../../agents/lib/budget')
+    const query = (() => (async function* () {
+      yield { type: 'result', subtype: 'success', is_error: true, result: 'Not logged in', num_turns: 1, total_cost_usd: 0 }
+    })()) as never
+    const llm = createClaudeLlm({ model: 'm', budget: new Budget({ maxTurns: 5, maxBudgetUsd: 1 }), query })
+    await expect(llm.complete({ stage: 'scout', prompt: 'p', system: 's', schema: z.object({}) } as never)).rejects.toThrow(/Not logged in/)
+  })
+})
