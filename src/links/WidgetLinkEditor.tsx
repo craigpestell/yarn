@@ -1,4 +1,8 @@
 import { useContext, useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { FieldError, Fieldset } from '@/components/ui/fieldset'
+import { Input, Select } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { listBoards } from '../boards/api'
 import type { BoardSummary } from '../boards/schemas'
 import { clearWidgetLink, parseBoardUrl, resolveBoard, setWidgetLink } from './api'
@@ -47,30 +51,30 @@ export function WidgetLinkEditor({ widgetId }: { widgetId: string }) {
     })
 
   return (
-    <fieldset className="link-editor">
+    <Fieldset>
       <legend>Linked board</legend>
       {link && (
         <p>
           {link.title === null ? 'Board unavailable' : link.title}{' '}
-          <button type="button" onClick={() => void run(() => clearWidgetLink(editor.client, boardId, widgetId))}>Clear link</button>
+          <Button onClick={() => void run(() => clearWidgetLink(editor.client, boardId, widgetId))}>Clear link</Button>
         </p>
       )}
-      <label className="field">
+      <Label>
         Your boards
-        <select value={pick} onChange={(e) => setPick(e.target.value)}>
+        <Select value={pick} onChange={(e) => setPick(e.target.value)}>
           <option value="">Choose a board</option>
           {boards.filter((b) => b.id !== boardId).map((b) => (
             <option key={b.id} value={b.id}>{b.title}</option>
           ))}
-        </select>
-      </label>
-      <button type="button" disabled={!pick} onClick={() => void run(() => setWidgetLink(editor.client, boardId, widgetId, pick))}>Link to this board</button>
-      <label className="field">
+        </Select>
+      </Label>
+      <Button disabled={!pick} onClick={() => void run(() => setWidgetLink(editor.client, boardId, widgetId, pick))}>Link to this board</Button>
+      <Label>
         Or paste a board address
-        <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://.../b/board-name" />
-      </label>
-      <button type="button" disabled={!url.trim()} onClick={() => void byUrl()}>Link by address</button>
-      {error && <p className="err" role="alert">{error}</p>}
-    </fieldset>
+        <Input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://.../b/board-name" />
+      </Label>
+      <Button disabled={!url.trim()} onClick={() => void byUrl()}>Link by address</Button>
+      {error && <FieldError>{error}</FieldError>}
+    </Fieldset>
   )
 }

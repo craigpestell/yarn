@@ -1,3 +1,6 @@
+import { Button } from '@/components/ui/button'
+import { Input, Select, Textarea } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { LIMITS, type Widget, type WidgetType } from '../../shared/schema'
 import { WidgetLinkEditor } from '../links/WidgetLinkEditor'
 import { widgetLabel } from './docOps'
@@ -34,34 +37,34 @@ function WidgetFields({ w }: { w: Widget }) {
   return (
     <>
       {FIELDS[w.type].map((f) => (
-        <label key={f.key} className="field">
+        <Label key={f.key}>
           {f.label}
           {f.multiline ? (
-            <textarea rows={4} maxLength={f.max} value={text(f.key)} onChange={(e) => patch(w.id, { data: { [f.key]: e.target.value } })} />
+            <Textarea rows={4} maxLength={f.max} value={text(f.key)} onChange={(e) => patch(w.id, { data: { [f.key]: e.target.value } })} />
           ) : (
-            <input type="text" maxLength={f.max} value={text(f.key)} onChange={(e) => patch(w.id, { data: { [f.key]: e.target.value } })} />
+            <Input type="text" maxLength={f.max} value={text(f.key)} onChange={(e) => patch(w.id, { data: { [f.key]: e.target.value } })} />
           )}
-        </label>
+        </Label>
       ))}
       {w.type === 'note' && (
-        <label className="field">
+        <Label>
           Color
-          <input type="color" value={w.data.color} onChange={(e) => patch(w.id, { data: { color: e.target.value } })} />
-        </label>
+          <Input type="color" value={w.data.color} onChange={(e) => patch(w.id, { data: { color: e.target.value } })} />
+        </Label>
       )}
-      <label className="field">
+      <Label>
         Status
-        <select value={w.status ?? ''} onChange={(e) => patch(w.id, { status: e.target.value || undefined })}>
+        <Select value={w.status ?? ''} onChange={(e) => patch(w.id, { status: e.target.value || undefined })}>
           <option value="">None</option>
           {STATUSES.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
-        </select>
-      </label>
-      <label className="field inline">
-        <input type="checkbox" checked={w.locked === true} onChange={(e) => patch(w.id, { locked: e.target.checked })} />
+        </Select>
+      </Label>
+      <Label inline>
+        <Input type="checkbox" checked={w.locked === true} onChange={(e) => patch(w.id, { locked: e.target.checked })} />
         Locked (cannot be moved)
-      </label>
+      </Label>
       <SourcesEditor widget={w} />
       <WidgetLinkEditor widgetId={w.id} />
     </>
@@ -88,30 +91,30 @@ export function Inspector() {
   }
 
   return (
-    <aside className="inspector" aria-label="Inspector">
-      <div className="inspector-head">
-        <h2>{widget ? widgetLabel(widget) : 'Yarn'}</h2>
-        <button type="button" onClick={() => {
+    <aside className="tw flex w-[300px] max-w-[45vw] flex-col gap-2.5 overflow-y-auto border-l border-border-subtle bg-background p-3 text-foreground" aria-label="Inspector">
+      <div className="flex items-start justify-between gap-2">
+        <h2 className="text-base font-bold [overflow-wrap:anywhere]">{widget ? widgetLabel(widget) : 'Yarn'}</h2>
+        <Button onClick={() => {
           select(null)
           requestFocus(selection.id)
-        }}>Close</button>
+        }}>Close</Button>
       </div>
       {widget && <WidgetFields w={widget} />}
-      {widget && <button type="button" className="danger" onClick={() => {
+      {widget && <Button variant="destructive" onClick={() => {
         requestFocus('canvas')
         deleteWidget(widget.id)
-      }}>Delete widget</button>}
+      }}>Delete widget</Button>}
       {edge && (
         <>
           <p>{name(edge.source)} to {name(edge.target)}</p>
-          <label className="field">
+          <Label>
             Yarn color
-            <input type="color" value={edge.color.length === 7 ? edge.color : '#e53e3e'} onChange={(e) => patchEdge(edge.id, e.target.value)} />
-          </label>
-          <button type="button" className="danger" onClick={() => {
+            <Input type="color" value={edge.color.length === 7 ? edge.color : '#e53e3e'} onChange={(e) => patchEdge(edge.id, e.target.value)} />
+          </Label>
+          <Button variant="destructive" onClick={() => {
             requestFocus('canvas')
             deleteEdge(edge.id)
-          }}>Delete yarn</button>
+          }}>Delete yarn</Button>
         </>
       )}
     </aside>

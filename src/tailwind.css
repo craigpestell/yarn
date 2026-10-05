@@ -1,0 +1,51 @@
+/* Tailwind v4, theme and utilities only: no global preflight, so legacy unclassed markup and the canvas are untouched.
+   Layered CSS loses to the unlayered rules in styles.css, so migrated components must not match legacy selectors. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@source '../src/components';
+@source '../src/editor/Inspector.tsx';
+@source '../src/editor/SourcesEditor.tsx';
+@source '../src/editor/Toolbar.tsx';
+@source '../src/links/WidgetLinkEditor.tsx';
+
+/* shadcn tokens, used only by migrated components (palette: warm stone neutrals, blue focus ring). */
+:root {
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --muted-foreground: #57534e;
+  --border: #a8a29e;
+  --border-subtle: #d6d3d1;
+  --input: #a8a29e;
+  --primary: #f5f5f4;
+  --primary-foreground: #1c1917;
+  --destructive: #b91c1c;
+  --destructive-soft: #fee2e2;
+  --destructive-foreground: #7f1d1d;
+  --ring: #2563eb;
+  --border-strong: #78716c;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-ring: var(--ring);
+  --color-border-strong: var(--border-strong);
+}
+
+/* Minimal reset scoped to migrated components (applied via the `tw` class on their roots). */
+@layer base {
+  .tw, .tw * { border-style: solid; border-width: 0; border-color: var(--border); }
+  .tw :is(h2, p, ul, fieldset, legend) { margin: 0; padding: 0; }
+  .tw ul { list-style: none; }
+  .tw fieldset { min-width: 0; }
+}
