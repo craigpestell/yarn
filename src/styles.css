@@ -36,6 +36,8 @@ button, select, input, textarea { font: inherit; }
 .art.sel-source { outline: 4px solid #22c55e; outline-offset: 3px; }
 .art.sel-connected { outline: 4px solid #f97316; outline-offset: 3px; }
 .widget.locked { cursor: default; }
+.resize-handle { position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; z-index: 3; cursor: nwse-resize; opacity: 0; transition: opacity 0.15s; touch-action: none; background: linear-gradient(135deg, transparent 50%, #57534e 50% 60%, transparent 60% 70%, #57534e 70% 80%, transparent 80%); }
+.widget:hover > .resize-handle, .resize-handle:active { opacity: 0.85; }
 .tack { position: absolute; pointer-events: none; z-index: 2; }
 .badge { position: absolute; right: 4px; bottom: 4px; z-index: 2; padding: 1px 6px; border-radius: 8px; font-size: 11px; background: #fff; border: 1px solid #57534e; }
 .badge-verified { background: #bbf7d0; }
@@ -44,7 +46,7 @@ button, select, input, textarea { font: inherit; }
 .badge-claim { background: #fde68a; }
 
 .polaroid { background: #fff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); padding: 20px 30px 0; font-family: 'Courier New', Courier, monospace; }
-.polaroid-img { width: 140px; height: 140px; background: #e5e7eb; }
+.polaroid-img { width: 100%; aspect-ratio: 1; background: #e5e7eb; }
 .polaroid-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .polaroid-title { margin-top: 8px; font-weight: bold; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .polaroid-caption { font-size: 12px; max-height: 3.6em; overflow: hidden; }
