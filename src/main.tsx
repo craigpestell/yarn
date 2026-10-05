@@ -6,6 +6,7 @@ import { AuthProvider } from './auth/AuthProvider'
 import { getSupabase } from './lib/supabase'
 import { createAppRouter } from './routes'
 import './styles.css'
+import './tailwind.css'
 
 const root = document.getElementById('root')
 if (!root) throw new Error('missing #root')

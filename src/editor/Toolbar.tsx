@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
+import { Button } from '@/components/ui/button'
 import { WIDGET_TYPES, type WidgetType } from '../../shared/schema'
 import { useBoard } from './store'
 
@@ -34,9 +35,9 @@ function Menu({ label, children }: { label: string; children: (close: () => void
     }
   }, [open])
   return (
-    <div className="menu" ref={root}>
-      <button type="button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{label} ▾</button>
-      {open && <div className="menu-list" role="menu">{children(() => setOpen(false))}</div>}
+    <div className="relative" ref={root}>
+      <Button aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{label} ▾</Button>
+      {open && <div role="menu" className="absolute left-0 top-[calc(100%+4px)] z-20 flex min-w-44 flex-col gap-1 rounded-md border border-border bg-background p-1.5 shadow-[0_6px_18px_rgba(0,0,0,0.3)]">{children(() => setOpen(false))}</div>}
     </div>
   )
 }
@@ -57,29 +58,29 @@ export function Toolbar() {
   }
 
   return (
-    <div className="toolbar" role="toolbar" aria-label="Board tools">
+    <div className="tw flex flex-wrap items-center gap-1.5" role="toolbar" aria-label="Board tools">
       <Menu label="Add">
         {(close) => WIDGET_TYPES.map((t) => (
-          <button key={t} type="button" role="menuitem" onClick={() => { useBoard.getState().addWidget(t); close() }}>{ADD_LABEL[t]}</button>
+          <Button key={t} variant="menuitem" role="menuitem" onClick={() => { useBoard.getState().addWidget(t); close() }}>{ADD_LABEL[t]}</Button>
         ))}
       </Menu>
-      <button type="button" aria-pressed={connect.active} onClick={() => useBoard.getState().toggleConnectMode()}>
+      <Button variant="toggle" aria-pressed={connect.active} onClick={() => useBoard.getState().toggleConnectMode()}>
         Connect yarn
-      </button>
-      <button type="button" disabled={busy} onClick={() => void organize()}>
+      </Button>
+      <Button disabled={busy} className="disabled:cursor-progress" onClick={() => void organize()}>
         {busy ? 'Organizing...' : 'Auto-organize'}
-      </button>
+      </Button>
       <Menu label="Import / export">
         {(close) => (
           <>
-            <button type="button" role="menuitem" onClick={() => { download('board.json', useBoard.getState().exportJson()); close() }}>Export JSON</button>
-            <button type="button" role="menuitem" onClick={() => { file.current?.click(); close() }}>Import JSON</button>
+            <Button variant="menuitem" role="menuitem" onClick={() => { download('board.json', useBoard.getState().exportJson()); close() }}>Export JSON</Button>
+            <Button variant="menuitem" role="menuitem" onClick={() => { file.current?.click(); close() }}>Import JSON</Button>
           </>
         )}
       </Menu>
       <input ref={file} type="file" accept="application/json,.json" hidden aria-label="Import JSON file" onChange={(e) => void onImport(e)} />
       {connect.active && (
-        <span className="hint" role="status">
+        <span className="text-[0.9rem] text-amber-200" role="status">
           {connect.source ? 'Pick the target widget' : 'Pick the source widget'} (Esc cancels)
         </span>
       )}
