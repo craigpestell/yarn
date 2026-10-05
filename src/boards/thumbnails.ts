@@ -24,6 +24,20 @@ export async function removePublishedThumbnail(client: SupabaseClient, ownerId: 
   }
 }
 
+/**
+ * Best effort: remove both thumbnails (live and published) of boards that were just deleted. Never throws and
+ * never reports: remove() can succeed while deleting nothing under Storage RLS, so the result is not verified.
+ */
+export async function removeBoardThumbnails(client: SupabaseClient, ownerId: string, boardIds: string[]): Promise<void> {
+  if (boardIds.length === 0) return
+  try {
+    const paths = boardIds.flatMap((id) => [thumbnailPath(ownerId, id), publishedThumbnailPath(ownerId, id)])
+    await client.storage.from(THUMB_BUCKET).remove(paths)
+  } catch {
+    // ignore: the board rows are gone, so the files are unreachable orphans at worst
+  }
+}
+
 export async function uploadThumbnail(client: SupabaseClient, ownerId: string, boardId: string, png: Blob): Promise<void> {
   const { error } = await client.storage
     .from(THUMB_BUCKET)

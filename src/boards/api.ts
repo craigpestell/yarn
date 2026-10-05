@@ -85,3 +85,21 @@ export const softDeleteBoard = (client: SupabaseClient, id: string, now: Date = 
 
 export const restoreBoard = (client: SupabaseClient, id: string) =>
   updateColumns(client, id, 'restore the board', { deleted_at: null })
+
+/** Permanently delete every trashed board the caller owns. Resolves to the deleted ids. */
+export async function emptyTrash(client: SupabaseClient): Promise<string[]> {
+  const { data, error } = await client.rpc('empty_my_trash')
+  if (error) fail('empty the trash', error.message)
+  return parse(z.array(z.string().uuid()), data, 'empty the trash')
+}
+
+/**
+ * Permanently delete one trashed board. The RPC returns a boolean (was a row deleted); this resolves to `[id]` or `[]`
+ * instead so the result has the same shape as `emptyTrash` and feeds thumbnail cleanup directly (nothing to clean
+ * up when the board was no longer in the trash).
+ */
+export async function deleteTrashedBoard(client: SupabaseClient, id: string): Promise<string[]> {
+  const { data, error } = await client.rpc('delete_trashed_board', { p_id: id })
+  if (error) fail('delete the board', error.message)
+  return parse(z.boolean(), data, 'delete the board') ? [id] : []
+}
