@@ -124,9 +124,9 @@ export function Inspector() {
   }
 
   return (
-    <aside className="tw flex w-[300px] max-w-[45vw] flex-col gap-2.5 overflow-y-auto border-l border-border-subtle bg-background p-3 text-foreground" aria-label="Inspector">
+    <aside className="tw flex w-[300px] max-w-[45vw] flex-col gap-2.5 overflow-y-auto border-l-2 border-border bg-background p-3 text-foreground shadow-[-6px_0_14px_rgba(0,0,0,0.35)]" aria-label="Inspector">
       <div className="flex items-start justify-between gap-2">
-        <h2 className="text-base font-bold [overflow-wrap:anywhere]">{widget ? widgetLabel(widget) : 'Yarn'}</h2>
+        <h2 className="font-marker text-lg leading-tight [overflow-wrap:anywhere]">{widget ? widgetLabel(widget) : 'Yarn'}</h2>
         <Button onClick={() => {
           select(null)
           requestFocus(selection.id)

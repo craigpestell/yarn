@@ -2,16 +2,19 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 import { cn } from '@/lib/utils'
 
+/** Embossed label-maker tape: near-black strip, light lettering, a raised top edge. */
+const TAPE = 'bg-primary text-primary-foreground border-tape-edge shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_1px_0_rgba(0,0,0,0.45)] [text-shadow:0_-1px_0_rgba(0,0,0,0.7)] enabled:hover:bg-primary-hover'
+
 // No focus-visible styling here: the single global :focus-visible outline in styles.css applies.
 const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded border px-2.5 py-1 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed',
+  'inline-flex items-center justify-center rounded-[3px] border px-2.5 py-1 font-semibold tracking-wide cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground border-border-strong enabled:hover:bg-stone-200',
-        destructive: 'bg-destructive-soft text-destructive-foreground border-destructive enabled:hover:bg-red-200',
-        toggle: 'bg-primary text-primary-foreground border-border-strong enabled:hover:bg-stone-200 aria-pressed:bg-green-500 aria-pressed:border-green-700 aria-pressed:enabled:hover:bg-green-500',
-        menuitem: 'w-full justify-start text-left bg-primary text-primary-foreground border-border-strong enabled:hover:bg-stone-200',
+        default: TAPE,
+        destructive: 'bg-transparent text-destructive-foreground border-2 border-destructive font-bold enabled:hover:bg-destructive-soft',
+        toggle: `${TAPE} aria-pressed:bg-yarn aria-pressed:border-yarn-edge aria-pressed:enabled:hover:bg-yarn`,
+        menuitem: `w-full justify-start text-left ${TAPE}`,
       },
     },
     defaultVariants: { variant: 'default' },

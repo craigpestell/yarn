@@ -13,7 +13,7 @@ describe('ui primitives', () => {
   })
   it('applies variant classes', () => {
     render(<Button variant="destructive">x</Button>)
-    expect(screen.getByText('x')).toHaveClass('bg-destructive-soft')
+    expect(screen.getByText('x')).toHaveClass('border-destructive')
   })
   it('cn merges conflicting utilities', () => {
     expect(cn('px-2', 'px-4')).toBe('px-4')

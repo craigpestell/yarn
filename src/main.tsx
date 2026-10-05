@@ -1,4 +1,5 @@
 import '@fontsource/permanent-marker/latin-400.css'
+import '@fontsource/special-elite/latin-400.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router'

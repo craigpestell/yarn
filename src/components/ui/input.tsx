@@ -1,11 +1,12 @@
 import type { ComponentProps } from 'react'
 import { cn } from '@/lib/utils'
 
-const control = 'rounded border border-input bg-white px-1.5 py-1 text-foreground'
+/** Typed-form field: lighter paper, typewriter lettering, ink border. */
+const control = 'rounded-[2px] border border-input bg-paper px-1.5 py-1 font-typewriter text-foreground'
 
 export function Input({ className, type = 'text', ...props }: ComponentProps<'input'>) {
   const kind = type === 'checkbox' ? 'size-4' : type === 'color' ? 'h-8 w-full cursor-pointer p-0.5' : control
-  return <input type={type} className={cn('font-[inherit]', kind, className)} {...props} />
+  return <input type={type} className={cn('accent-yarn', kind, className)} {...props} />
 }
 
 export function Textarea({ className, ...props }: ComponentProps<'textarea'>) {

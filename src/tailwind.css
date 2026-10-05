@@ -9,25 +9,32 @@
 @source '../src/editor/Toolbar.tsx';
 @source '../src/links/WidgetLinkEditor.tsx';
 
-/* shadcn tokens, used only by migrated components (palette: warm stone neutrals, blue focus ring). */
+/* Evidence-room theme (used only by migrated components): manila case-file paper, typed-ink text, label-tape buttons, red yarn for emphasis.
+   Walnut (#2b1d14 / #33231a) is the frame colour of the top bar, nav and footer in styles.css. */
 :root {
-  --background: #fafaf9;
-  --foreground: #1c1917;
-  --muted-foreground: #57534e;
-  --border: #a8a29e;
-  --border-subtle: #d6d3d1;
-  --input: #a8a29e;
-  --primary: #f5f5f4;
-  --primary-foreground: #1c1917;
-  --destructive: #b91c1c;
-  --destructive-soft: #fee2e2;
-  --destructive-foreground: #7f1d1d;
+  --background: #d9bf8c;
+  --paper: #efe2c0;
+  --foreground: #1d1611;
+  --muted-foreground: #4a3b2c;
+  --border: #8a7550;
+  --border-subtle: #b39b6b;
+  --input: #5b4a33;
+  --primary: #1c1a18;
+  --primary-foreground: #f4efe2;
+  --primary-hover: #34302b;
+  --tape-edge: #6b5d4d;
+  --destructive: #b3262b;
+  --destructive-soft: #e6c9a6;
+  --destructive-foreground: #8f1d21;
+  --yarn: #b3262b;
+  --yarn-edge: #7d151a;
   --ring: #2563eb;
-  --border-strong: #78716c;
+  --border-strong: #6b5d4d;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-paper: var(--paper);
   --color-foreground: var(--foreground);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
@@ -35,11 +42,17 @@
   --color-input: var(--input);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-tape-edge: var(--tape-edge);
   --color-destructive: var(--destructive);
   --color-destructive-soft: var(--destructive-soft);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-yarn: var(--yarn);
+  --color-yarn-edge: var(--yarn-edge);
   --color-ring: var(--ring);
   --color-border-strong: var(--border-strong);
+  --font-typewriter: 'Special Elite', 'Courier New', Courier, monospace;
+  --font-marker: 'Permanent Marker', cursive;
 }
 
 /* Minimal reset scoped to migrated components (applied via the `tw` class on their roots). */
