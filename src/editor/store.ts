@@ -64,6 +64,13 @@ export interface BoardState {
 /** Place new widgets on a gentle staircase so they do not stack exactly. */
 const spawnPoint = (n: number) => ({ x: 100 + (n % 8) * 40, y: 100 + (n % 8) * 30 })
 
+/** True when the selection points at a widget or yarn that exists, i.e. the widget dialog is actually open. */
+export const isDialogOpen = (s: Pick<BoardState, 'doc' | 'selection'>): boolean => {
+  const sel = s.selection
+  if (!sel) return false
+  return (sel.kind === 'widget' ? s.doc.widgets : s.doc.edges).some((x) => x.id === sel.id)
+}
+
 export const useBoard = create<BoardState>()((set, get) => ({
   title: SAMPLE_TITLE,
   doc: SAMPLE_DOC,

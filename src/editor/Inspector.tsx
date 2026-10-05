@@ -1,35 +1,13 @@
 import { Button } from '@/components/ui/button'
 import { Input, Select, Textarea } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { LIMITS, type Widget, type WidgetType } from '../../shared/schema'
+import { LIMITS, type Widget } from '../../shared/schema'
 import { WidgetLinkEditor } from '../links/WidgetLinkEditor'
 import { widgetLabel } from './docOps'
+import { FIELDS, STATUSES } from './fields'
 import { RESIZE_RULES } from './geometry'
 import { SourcesEditor } from './SourcesEditor'
 import { useBoard } from './store'
-
-interface Field {
-  key: string
-  label: string
-  max: number
-  multiline?: boolean
-}
-const FIELDS: Record<WidgetType, Field[]> = {
-  photo: [
-    { key: 'title', label: 'Title', max: LIMITS.photoTitle },
-    { key: 'caption', label: 'Caption', max: LIMITS.caption, multiline: true },
-  ],
-  note: [{ key: 'text', label: 'Text', max: LIMITS.noteText, multiline: true }],
-  wanted: [
-    { key: 'name', label: 'Name', max: LIMITS.short },
-    { key: 'alias', label: 'Alias', max: LIMITS.short },
-    { key: 'crime', label: 'Crime', max: LIMITS.short },
-    { key: 'description', label: 'Description', max: LIMITS.description, multiline: true },
-    { key: 'reward', label: 'Reward', max: LIMITS.short },
-  ],
-  paper: [{ key: 'content', label: 'Content', max: LIMITS.paperContent, multiline: true }],
-}
-const STATUSES = ['claim', 'disputed', 'verified', 'speculation'] as const
 
 /** Keyboard route to resizing: width always, height only where it is not tied to the width. */
 function SizeFields({ w }: { w: Extract<Widget, { type: 'photo' | 'paper' }> }) {
@@ -104,11 +82,10 @@ function WidgetFields({ w }: { w: Widget }) {
   )
 }
 
-/** The single, generic inspector: edits whatever is selected, driven by the field table above. */
+/** The edit part of the widget dialog, driven by the field table. Renders standalone (no modal, heading or close). */
 export function Inspector() {
   const selection = useBoard((s) => s.selection)
   const doc = useBoard((s) => s.doc)
-  const select = useBoard((s) => s.select)
   const deleteWidget = useBoard((s) => s.deleteWidget)
   const deleteEdge = useBoard((s) => s.deleteEdge)
   const patchEdge = useBoard((s) => s.patchEdge)
@@ -124,14 +101,7 @@ export function Inspector() {
   }
 
   return (
-    <aside className="tw flex w-[300px] max-w-[45vw] flex-col gap-2.5 overflow-y-auto border-l-2 border-border bg-background p-3 text-foreground shadow-[-6px_0_14px_rgba(0,0,0,0.35)]" aria-label="Inspector">
-      <div className="flex items-start justify-between gap-2">
-        <h2 className="font-marker text-lg leading-tight [overflow-wrap:anywhere]">{widget ? widgetLabel(widget) : 'Yarn'}</h2>
-        <Button onClick={() => {
-          select(null)
-          requestFocus(selection.id)
-        }}>Close</Button>
-      </div>
+    <div className="tw flex flex-col gap-2.5 text-foreground" data-edit-part>
       {widget && <WidgetFields w={widget} />}
       {widget && <Button variant="destructive" onClick={() => {
         requestFocus('canvas')
@@ -150,6 +120,6 @@ export function Inspector() {
           }}>Delete yarn</Button>
         </>
       )}
-    </aside>
+    </div>
   )
 }

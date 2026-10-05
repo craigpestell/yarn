@@ -1,12 +1,13 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from '../../src/App'
 import { SAMPLE_DOC, SAMPLE_TITLE } from '../../src/editor/sample'
 import { useBoard } from '../../src/editor/store'
 
 const s = () => useBoard.getState()
+afterEach(() => vi.useRealTimers())
 beforeEach(() => {
   s().loadBoard(SAMPLE_TITLE, SAMPLE_DOC)
 })
@@ -28,14 +29,15 @@ describe('editor keyboard behaviour', () => {
     yarns[0]?.focus()
     expect(yarns[0]).toHaveFocus()
   })
-  it('Enter selects and opens the inspector; Delete removes widget and its edges', async () => {
+  it('Enter opens the widget dialog; Delete removes widget and its edges', async () => {
     const user = userEvent.setup()
     render(<App />)
     const keeper = node('The keeper')
     keeper.focus()
     await user.keyboard('{Enter}')
-    expect(screen.getByRole('complementary', { name: 'Inspector' })).toBeInTheDocument()
-    keeper.focus()
+    expect(screen.getByRole('dialog', { name: /^Photo: The keeper/ })).toBeInTheDocument()
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(keeper).toHaveFocus())
     await user.keyboard('{Delete}')
     expect(s().doc.widgets.some((w) => w.id === 'w-keeper')).toBe(false)
     expect(s().doc.edges.some((e) => e.source === 'w-keeper' || e.target === 'w-keeper')).toBe(false)
@@ -49,13 +51,14 @@ describe('editor keyboard behaviour', () => {
     expect(s().doc.edges).toHaveLength(SAMPLE_DOC.edges.length - 1)
     expect(s().doc.widgets).toHaveLength(SAMPLE_DOC.widgets.length)
   })
-  it('Enter on a yarn selects it and the inspector can delete it', async () => {
+  it('Enter on a yarn opens a compact dialog that can delete it', async () => {
     const user = userEvent.setup()
     render(<App />)
     screen.getAllByRole('group', { name: /^Yarn between/ })[0]?.focus()
     await user.keyboard('{Enter}')
-    const insp = screen.getByRole('complementary', { name: 'Inspector' })
-    await user.click(within(insp).getByRole('button', { name: 'Delete yarn' }))
+    const dialog = screen.getByRole('dialog', { name: 'Yarn' })
+    expect(dialog.querySelector('[data-detail-view]')).toBeNull()
+    await user.click(within(dialog).getByRole('button', { name: 'Delete yarn' }))
     expect(s().doc.edges).toHaveLength(SAMPLE_DOC.edges.length - 1)
   })
   it('connection mode toggles an edge and Escape cancels', async () => {
@@ -78,12 +81,13 @@ describe('editor keyboard behaviour', () => {
     await user.keyboard('{Enter}')
     expect(s().doc.edges).toHaveLength(SAMPLE_DOC.edges.length + 1)
   })
-  it('adding a widget opens the inspector', async () => {
+  it('adding a widget opens the widget dialog with focus in the first field', async () => {
     const user = userEvent.setup()
     render(<App />)
     await user.click(screen.getByRole('button', { name: /^Add/ }))
     await user.click(screen.getByRole('menuitem', { name: 'Add note' }))
-    expect(screen.getByRole('complementary', { name: 'Inspector' })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: /^Note:/ })).toBeInTheDocument()
+    expect(screen.getByLabelText('Text')).toHaveFocus()
     await user.type(screen.getByLabelText('Text'), 'hi')
     const sel = s().selection
     const w = s().doc.widgets.find((x) => x.id === sel?.id)
@@ -159,13 +163,20 @@ describe('focus, notices and keyboard edge cases', () => {
     await user.keyboard('{Delete}')
     await waitFor(() => expect(document.activeElement?.classList.contains('react-flow__edge')).toBe(true))
   })
-  it('adding a widget focuses it; closing the inspector returns focus to the widget', async () => {
+  it('adding a widget focuses its first field; closing the dialog returns focus to the widget', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('button', { name: /^Add/ }))
-    await user.click(screen.getByRole('menuitem', { name: 'Add paper' }))
+    vi.useFakeTimers()
+    fireEvent.click(screen.getByRole('button', { name: /^Add/ }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Add paper' }))
     const id = s().selection?.id ?? ''
-    await waitFor(() => expect(document.activeElement?.getAttribute('data-id')).toBe(id))
+    expect(screen.getByLabelText('Content')).toHaveFocus()
+    // Run out the Canvas focus-request retry window (10 tries x 20ms): it must not steal focus back.
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+    expect(screen.getByLabelText('Content')).toHaveFocus()
+    vi.useRealTimers()
     await user.click(screen.getByRole('button', { name: 'Close' }))
     await waitFor(() => expect(document.activeElement?.getAttribute('data-id')).toBe(id))
   })
@@ -218,6 +229,7 @@ describe('yarn rendering (regression: edges dropped without real handles)', () =
     const { container } = render(<App />)
     await user.click(container.querySelector('.react-flow__edge .yarn-main') as Element)
     expect(s().selection).toEqual({ kind: 'edge', id: 'e1' })
+    expect(screen.getByRole('dialog', { name: 'Yarn' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Delete yarn' })).toBeInTheDocument()
   })
   it('connect mode creates a visible edge', async () => {
@@ -232,13 +244,18 @@ describe('yarn rendering (regression: edges dropped without real handles)', () =
 
 describe('accessibility', () => {
   it('has no axe violations', async () => {
-    const { container } = render(<App />)
-    const results = await axe(container)
-    expect(results.violations).toEqual([])
+    render(<App />)
+    expect((await axe(document.body)).violations).toEqual([])
   })
-  it('has no axe violations with the inspector open', async () => {
+  it('has no axe violations with the widget dialog open', async () => {
     s().select({ kind: 'widget', id: 'w-paper' })
-    const { container } = render(<App />)
-    expect((await axe(container)).violations).toEqual([])
+    render(<App />)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect((await axe(document.body)).violations).toEqual([])
+  })
+  it('has no axe violations with a yarn dialog open', async () => {
+    s().select({ kind: 'edge', id: 'e1' })
+    render(<App />)
+    expect((await axe(document.body)).violations).toEqual([])
   })
 })
