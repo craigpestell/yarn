@@ -2,9 +2,9 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthProvider'
 import { renderThumbnailPng } from './thumbnailSvg'
-import { createBoard, duplicateBoard, listBoards, renameBoard, restoreBoard, softDeleteBoard } from './api'
+import { createBoard, deleteTrashedBoard, duplicateBoard, emptyTrash, listBoards, renameBoard, restoreBoard, softDeleteBoard } from './api'
 import type { BoardSummary } from './schemas'
-import { thumbnailUrls, uploadThumbnail } from './thumbnails'
+import { removeBoardThumbnails, thumbnailUrls, uploadThumbnail } from './thumbnails'
 
 const message = (e: unknown) => (e instanceof Error ? e.message : 'Something went wrong')
 
@@ -65,5 +65,17 @@ export function useBoards() {
     rename: (boardId: string, title: string) => run((c) => renameBoard(c, boardId, title)),
     trash: (boardId: string) => run((c) => softDeleteBoard(c, boardId)),
     restore: (boardId: string) => run((c) => restoreBoard(c, boardId)),
+    emptyTrash: () =>
+      run(async (c, owner) => {
+        const ids = await emptyTrash(c)
+        await removeBoardThumbnails(c, owner, ids)
+        return ids
+      }),
+    deleteForever: (boardId: string) =>
+      run(async (c, owner) => {
+        const ids = await deleteTrashedBoard(c, boardId)
+        await removeBoardThumbnails(c, owner, ids)
+        return ids
+      }),
   }
 }

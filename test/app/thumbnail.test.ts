@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DocSchema } from '../../shared/schema'
 import { SAMPLE_DOC } from '../../src/editor/sample'
 import { renderThumbnailSvg } from '../../src/boards/thumbnailSvg'
-import { createThumbnailScheduler, removeAllThumbnails, thumbnailPath } from '../../src/boards/thumbnails'
+import { createThumbnailScheduler, removeAllThumbnails, removeBoardThumbnails, thumbnailPath } from '../../src/boards/thumbnails'
 
 describe('renderThumbnailSvg', () => {
   it('is deterministic and draws every widget and edge', () => {
@@ -102,5 +102,24 @@ describe('removeAllThumbnails', () => {
       .mockResolvedValue({ data: files(1), error: null })
     const remove = vi.fn(async (paths: string[]) => ({ data: paths.map((name) => ({ name })), error: null }))
     expect(await removeAllThumbnails(clientWith(list, remove), 'u1')).toMatch(/could not be removed/)
+  })
+})
+
+describe('removeBoardThumbnails', () => {
+  const clientWith = (remove: ReturnType<typeof vi.fn>) => ({ storage: { from: () => ({ remove }) } }) as unknown as SupabaseClient
+  it('requests both paths per id', async () => {
+    const remove = vi.fn(async () => ({ data: [], error: null }))
+    await removeBoardThumbnails(clientWith(remove), 'u1', ['b1', 'b2'])
+    expect(remove).toHaveBeenCalledWith(['u1/b1.png', 'u1/pub-b1.png', 'u1/b2.png', 'u1/pub-b2.png'])
+  })
+  it('does nothing for no ids', async () => {
+    const remove = vi.fn()
+    await removeBoardThumbnails(clientWith(remove), 'u1', [])
+    expect(remove).not.toHaveBeenCalled()
+  })
+  it('never throws on a rejected remove, an error result or an empty result', async () => {
+    await expect(removeBoardThumbnails(clientWith(vi.fn(async () => { throw new Error('down') })), 'u1', ['b1'])).resolves.toBeUndefined()
+    await expect(removeBoardThumbnails(clientWith(vi.fn(async () => ({ data: null, error: { message: 'denied' } }))), 'u1', ['b1'])).resolves.toBeUndefined()
+    await expect(removeBoardThumbnails(clientWith(vi.fn(async () => ({ data: [], error: null }))), 'u1', ['b1'])).resolves.toBeUndefined()
   })
 })

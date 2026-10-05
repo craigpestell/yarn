@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BoardsError, copyTitle, createBoard, duplicateBoard, listBoards, renameBoard, restoreBoard, softDeleteBoard } from '../../src/boards/api'
+import { BoardsError, copyTitle, createBoard, deleteTrashedBoard, duplicateBoard, emptyTrash, listBoards, renameBoard, restoreBoard, softDeleteBoard } from '../../src/boards/api'
 import { FORK_FAILED, ForkError, forkBoard } from '../../src/boards/fork'
 import { makeSlug } from '../../src/boards/slug'
 import { fetchForkSource } from '../../src/reader/api'
@@ -109,5 +109,25 @@ describe('fork api', () => {
     expect(await fetchForkSource(gone.client, sid(5))).toBeNull()
     const malformed = fakeClient({ rpc: { get_fork_source: () => ({ data: [{ source_slug: 'Bad Slug', source_title: 1 }], error: null }) } })
     await expect(fetchForkSource(malformed.client, sid(5))).rejects.toThrow()
+  })
+})
+
+describe('trash api', () => {
+  it('emptyTrash returns the uuid list and rejects malformed results and errors', async () => {
+    const ok = fakeClient({ rpc: { empty_my_trash: () => ({ data: [ID], error: null }) } })
+    expect(await emptyTrash(ok.client)).toEqual([ID])
+    const bad = fakeClient({ rpc: { empty_my_trash: () => ({ data: ['nope'], error: null }) } })
+    await expect(emptyTrash(bad.client)).rejects.toThrow(BoardsError)
+    const err = fakeClient({ rpc: { empty_my_trash: () => ({ data: null, error: { message: 'x' } }) } })
+    await expect(emptyTrash(err.client)).rejects.toThrow(/Could not empty the trash: x/)
+  })
+  it('deleteTrashedBoard maps the boolean to ids and validates it', async () => {
+    const yes = fakeClient({ rpc: { delete_trashed_board: () => ({ data: true, error: null }) } })
+    expect(await deleteTrashedBoard(yes.client, ID)).toEqual([ID])
+    expect(yes.rpc).toHaveBeenCalledWith('delete_trashed_board', { p_id: ID })
+    const no = fakeClient({ rpc: { delete_trashed_board: () => ({ data: false, error: null }) } })
+    expect(await deleteTrashedBoard(no.client, ID)).toEqual([])
+    const bad = fakeClient({ rpc: { delete_trashed_board: () => ({ data: 'yes', error: null }) } })
+    await expect(deleteTrashedBoard(bad.client, ID)).rejects.toThrow(BoardsError)
   })
 })
