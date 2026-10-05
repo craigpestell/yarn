@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { DocSchema } from '../../shared/schema'
 import { SAMPLE_DOC, SAMPLE_TITLE } from '../../src/editor/sample'
-import { useBoard } from '../../src/editor/store'
+import { isDialogOpen, useBoard, type Selection } from '../../src/editor/store'
 
 const s = () => useBoard.getState()
 beforeEach(() => {
@@ -130,5 +130,21 @@ describe('sample board layout', () => {
         const apart = a.x + a.w + m <= b.x || b.x + b.w + m <= a.x || a.y + a.h + m <= b.y || b.y + b.h + m <= a.y
         expect(apart, `${a.id} vs ${b.id}`).toBe(true)
       }
+  })
+})
+
+describe('isDialogOpen', () => {
+  it('is true only when the selection resolves to an existing widget or yarn', () => {
+    s().loadBoard(SAMPLE_TITLE, SAMPLE_DOC)
+    const widget = SAMPLE_DOC.widgets[0]
+    const edge = SAMPLE_DOC.edges[0]
+    if (!widget || !edge) throw new Error('setup')
+    const open = (selection: Selection | null) => isDialogOpen({ doc: s().doc, selection })
+    expect(open(null)).toBe(false)
+    expect(open({ kind: 'widget', id: widget.id })).toBe(true)
+    expect(open({ kind: 'edge', id: edge.id })).toBe(true)
+    expect(open({ kind: 'widget', id: 'missing' })).toBe(false)
+    expect(open({ kind: 'edge', id: 'missing' })).toBe(false)
+    expect(open({ kind: 'edge', id: widget.id })).toBe(false)
   })
 })

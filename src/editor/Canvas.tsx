@@ -7,7 +7,7 @@ import { edgeTypes, type YarnEdgeType } from './edges/YarnEdge'
 import { nudgeFor, ZOOM_MAX, ZOOM_MIN } from './geometry'
 import { PIN_HANDLE, type WidgetNode } from './nodes/Frame'
 import { nodeTypes } from './nodes'
-import { useBoard, type ConnectState, type Selection } from './store'
+import { isDialogOpen, useBoard, type ConnectState, type Selection } from './store'
 
 /**
  * Pre-measured pin handles, only a fallback for environments that cannot measure the DOM (jsdom).
@@ -132,6 +132,8 @@ export function Canvas() {
       if (!root) return
       // The user moved focus themselves (e.g. into the inspector) while we waited: do not steal it.
       if (document.activeElement !== started && document.activeElement !== document.body) return
+      // The widget dialog is open (its own focus handling owns focus, and the background is inert): closing it requests focus again.
+      if (isDialogOpen(useBoard.getState())) return
       const el = focus.target === 'canvas' ? null : root.querySelector<HTMLElement | SVGElement>(`[data-id="${CSS.escape(focus.target)}"]`)
       if (el) el.focus()
       else if (focus.target === 'canvas' || tries >= 10) root.focus()

@@ -24,7 +24,7 @@ Behaviors to preserve:
 - Connection mode: pick source, then target toggles the edge; stage click cancels.
 - Pan on empty space; pointer-anchored wheel zoom clamped 0.1-3.
 - Random rotation at creation (-10..10 photos, -5..5 others).
-- New widget opens the inspector.
+- New widget opens the widget dialog.
 - Delete cascades edges.
 - Inline title edit (Enter saves, Esc cancels, maxLength 50).
 - JSON export/import kept as a backup feature.
@@ -67,7 +67,7 @@ The project is large. **M1-M2 (schema + zod, then auto-layout module + fixture t
 11. `topics` (slug, title, summary, tags) are many-to-many with public boards; only the owner can tag their own public board. Topics can be browsed and searched. Tested via RLS and a search query test.
 
 ### Editor
-12. Add, edit and delete widgets through one generic inspector (no per-type editors or modals). Drag respects zoom (unit test for delta/zoom). Pan/zoom are clamped 0.1-3.
+12. Add, edit and delete widgets through one generic inspector (no per-type editors). Drag respects zoom (unit test for delta/zoom). Pan/zoom are clamped 0.1-3.
 13. Create yarn by connecting pins. Select and delete yarn directly. Duplicate pairs (either direction) are deduped. Deleting a widget cascades its edges.
 14. Keyboard accessible: focus widgets and yarn, arrow-key nudge, Delete removes, Escape cancels connection. Verified by Testing Library keyboard tests plus an axe check.
 15. Inline title edit: Enter saves, Esc cancels, maxLength 50. Stage is responsive (no fixed size).
