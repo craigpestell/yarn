@@ -9,6 +9,7 @@ import {
   patchWidget,
   removeEdge,
   removeWidget,
+  resizeWidget,
   toggleEdge,
 } from './docOps'
 import { SAMPLE_DOC, SAMPLE_TITLE } from './sample'
@@ -38,6 +39,7 @@ export interface BoardState {
   setTitle: (title: string) => boolean
   addWidget: (type: WidgetType, rng?: () => number) => void
   moveBy: (id: string, dx: number, dy: number) => void
+  resizeTo: (id: string, w: number, h: number) => void
   patchWidget: (id: string, patch: { data?: Record<string, unknown> } & Record<string, unknown>) => void
   patchEdge: (id: string, color: string) => void
   deleteWidget: (id: string) => void
@@ -110,6 +112,10 @@ export const useBoard = create<BoardState>()((set, get) => ({
   },
 
   moveBy: (id, dx, dy) => set((s) => ({ doc: moveWidget(s.doc, id, dx, dy) })),
+  resizeTo: (id, w, h) => set((s) => {
+    const doc = resizeWidget(s.doc, id, w, h)
+    return doc === s.doc ? s : { doc }
+  }),
   patchWidget: (id, patch) =>
     set((s) => {
       const doc = patchWidget(s.doc, id, patch)

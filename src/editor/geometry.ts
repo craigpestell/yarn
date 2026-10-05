@@ -52,3 +52,40 @@ export function readableText(hex: string): string {
   const lum = 0.2126 * lin(0) + 0.7152 * lin(2) + 0.0722 * lin(4)
   return lum > 0.179 ? '#1c1917' : '#fafaf9'
 }
+
+/** Per-type resize limits. Types not listed here are not resizable. keepAspect scales height with width. */
+export const RESIZE_RULES = {
+  photo: { minW: 120, minH: 150, keepAspect: true },
+  paper: { minW: 140, minH: 140, keepAspect: false },
+} as const
+export type ResizableType = keyof typeof RESIZE_RULES
+export const isResizable = (type: string): type is ResizableType => type in RESIZE_RULES
+
+/** Screen-space pointer delta -> delta along the widget's own (rotated, zoomed) axes. */
+export function localDelta(screenDx: number, screenDy: number, rotationDeg: number, zoom: number): { dx: number; dy: number } {
+  const z = clampZoom(zoom)
+  const rad = (rotationDeg * Math.PI) / 180
+  const cos = Math.cos(rad)
+  const sin = Math.sin(rad)
+  return { dx: (screenDx * cos + screenDy * sin) / z, dy: (-screenDx * sin + screenDy * cos) / z }
+}
+
+/** New integer size for a bottom-right drag of (dx, dy) from `start`, clamped to the type's limits and `max`. */
+export function resizedSize(
+  start: { w: number; h: number },
+  dx: number,
+  dy: number,
+  rule: { minW: number; minH: number; keepAspect: boolean },
+  max: number,
+): { w: number; h: number } {
+  const clamp = (v: number, lo: number) => Math.min(max, Math.max(lo, Math.round(v)))
+  if (rule.keepAspect) {
+    const ratio = start.h / start.w
+    const scale = Math.max((start.w + dx) / start.w, (start.h + dy) / start.h)
+    // Floor on width so that neither dimension drops below its minimum.
+    const lo = Math.max(rule.minW, rule.minH / ratio)
+    const w = Math.min(max / Math.max(1, ratio), Math.max(lo, start.w * scale))
+    return { w: Math.round(w), h: Math.round(w * ratio) }
+  }
+  return { w: clamp(start.w + dx, rule.minW), h: clamp(start.h + dy, rule.minH) }
+}

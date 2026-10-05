@@ -2,6 +2,8 @@ import { Handle, Position, type Node, type NodeProps } from '@xyflow/react'
 import type { ReactNode } from 'react'
 import type { Widget, WidgetType } from '../../../shared/schema'
 import { LinkChip } from '../../links/LinkChip'
+import { isResizable } from '../geometry'
+import { ResizeHandle } from './ResizeHandle'
 import { Thumbtack } from './Thumbtack'
 import { useDrag } from './useDrag'
 
@@ -30,6 +32,7 @@ export function Frame({ widget, role, selected, readOnly, className, children }:
       </div>
       {widget.status && <span className={`badge badge-${widget.status}`}>{widget.status}</span>}
       <LinkChip widgetId={widget.id} />
+      {!widget.locked && !readOnly && isResizable(widget.type) && <ResizeHandle widget={widget} type={widget.type} />}
       <Thumbtack width={widget.w} />
       <Handle id={PIN_HANDLE} type="source" position={Position.Top} isConnectable={false} style={pinStyle(widget.w)} />
       <Handle id={PIN_HANDLE} type="target" position={Position.Top} isConnectable={false} style={pinStyle(widget.w)} />

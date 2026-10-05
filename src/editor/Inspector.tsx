@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label'
 import { LIMITS, type Widget, type WidgetType } from '../../shared/schema'
 import { WidgetLinkEditor } from '../links/WidgetLinkEditor'
 import { widgetLabel } from './docOps'
+import { RESIZE_RULES } from './geometry'
 import { SourcesEditor } from './SourcesEditor'
 import { useBoard } from './store'
 
@@ -30,6 +31,37 @@ const FIELDS: Record<WidgetType, Field[]> = {
 }
 const STATUSES = ['claim', 'disputed', 'verified', 'speculation'] as const
 
+/** Keyboard route to resizing: width always, height only where it is not tied to the width. */
+function SizeFields({ w }: { w: Extract<Widget, { type: 'photo' | 'paper' }> }) {
+  const resizeTo = useBoard((s) => s.resizeTo)
+  const rule = RESIZE_RULES[w.type]
+  const num = (v: string) => (v === '' ? NaN : Number(v))
+  return (
+    <>
+      <Label>
+        Width
+        <Input
+          type="number"
+          min={rule.minW}
+          max={LIMITS.maxSize}
+          value={w.w}
+          disabled={w.locked === true}
+          onChange={(e) => {
+            const nw = num(e.target.value)
+            resizeTo(w.id, nw, rule.keepAspect ? nw * (w.h / w.w) : w.h)
+          }}
+        />
+      </Label>
+      {!rule.keepAspect && (
+        <Label>
+          Height
+          <Input type="number" min={rule.minH} max={LIMITS.maxSize} value={w.h} disabled={w.locked === true} onChange={(e) => resizeTo(w.id, w.w, num(e.target.value))} />
+        </Label>
+      )}
+    </>
+  )
+}
+
 function WidgetFields({ w }: { w: Widget }) {
   const patch = useBoard((s) => s.patchWidget)
   const data: Record<string, unknown> = w.data
@@ -52,6 +84,7 @@ function WidgetFields({ w }: { w: Widget }) {
           <Input type="color" value={w.data.color} onChange={(e) => patch(w.id, { data: { color: e.target.value } })} />
         </Label>
       )}
+      {(w.type === 'photo' || w.type === 'paper') && <SizeFields w={w} />}
       <Label>
         Status
         <Select value={w.status ?? ''} onChange={(e) => patch(w.id, { status: e.target.value || undefined })}>
