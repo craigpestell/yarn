@@ -1,0 +1,64 @@
+/* Tailwind v4, theme and utilities only: no global preflight, so legacy unclassed markup and the canvas are untouched.
+   Layered CSS loses to the unlayered rules in styles.css, so migrated components must not match legacy selectors. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@source '../src/components';
+@source '../src/editor/Inspector.tsx';
+@source '../src/editor/SourcesEditor.tsx';
+@source '../src/editor/Toolbar.tsx';
+@source '../src/links/WidgetLinkEditor.tsx';
+
+/* Evidence-room theme (used only by migrated components): manila case-file paper, typed-ink text, label-tape buttons, red yarn for emphasis.
+   Walnut (#2b1d14 / #33231a) is the frame colour of the top bar, nav and footer in styles.css. */
+:root {
+  --background: #d9bf8c;
+  --paper: #efe2c0;
+  --foreground: #1d1611;
+  --muted-foreground: #4a3b2c;
+  --border: #8a7550;
+  --border-subtle: #b39b6b;
+  --input: #5b4a33;
+  --primary: #1c1a18;
+  --primary-foreground: #f4efe2;
+  --primary-hover: #34302b;
+  --tape-edge: #6b5d4d;
+  --destructive: #b3262b;
+  --destructive-soft: #e6c9a6;
+  --destructive-foreground: #8f1d21;
+  --yarn: #b3262b;
+  --yarn-edge: #7d151a;
+  --ring: #2563eb;
+  --border-strong: #6b5d4d;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-paper: var(--paper);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-tape-edge: var(--tape-edge);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-yarn: var(--yarn);
+  --color-yarn-edge: var(--yarn-edge);
+  --color-ring: var(--ring);
+  --color-border-strong: var(--border-strong);
+  --font-typewriter: 'Special Elite', 'Courier New', Courier, monospace;
+  --font-marker: 'Permanent Marker', cursive;
+}
+
+/* Minimal reset scoped to migrated components (applied via the `tw` class on their roots). */
+@layer base {
+  .tw, .tw * { border-style: solid; border-width: 0; border-color: var(--border); }
+  .tw :is(h2, p, ul, fieldset, legend) { margin: 0; padding: 0; }
+  .tw ul { list-style: none; }
+  .tw fieldset { min-width: 0; }
+}

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 /** Decorative 24px stroke icons (Lucide, ISC licence). Self-hosted inline SVG; always aria-hidden. */
 function Icon({ children }: { children: ReactNode }) {
   return (
-    <svg className="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+    <svg className="shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
       {children}
     </svg>
   )

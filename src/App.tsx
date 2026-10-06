@@ -1,7 +1,7 @@
 import { ReactFlowProvider } from '@xyflow/react'
 import { useEffect, type ReactNode } from 'react'
+import { WidgetDialog } from './components/widget-dialog/WidgetDialog'
 import { Canvas } from './editor/Canvas'
-import { Inspector } from './editor/Inspector'
 import { TitleEdit } from './editor/TitleEdit'
 import { Toolbar } from './editor/Toolbar'
 import { useBoard } from './editor/store'
@@ -47,7 +47,7 @@ export function App({ nav, banner, tools }: { nav?: ReactNode; banner?: ReactNod
           <main className="stage">
             <Canvas />
           </main>
-          <Inspector />
+          <WidgetDialog />
         </div>
       </div>
     </ReactFlowProvider>

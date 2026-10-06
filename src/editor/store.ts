@@ -9,6 +9,7 @@ import {
   patchWidget,
   removeEdge,
   removeWidget,
+  resizeWidget,
   toggleEdge,
 } from './docOps'
 import { SAMPLE_DOC, SAMPLE_TITLE } from './sample'
@@ -38,6 +39,7 @@ export interface BoardState {
   setTitle: (title: string) => boolean
   addWidget: (type: WidgetType, rng?: () => number) => void
   moveBy: (id: string, dx: number, dy: number) => void
+  resizeTo: (id: string, w: number, h: number) => void
   patchWidget: (id: string, patch: { data?: Record<string, unknown> } & Record<string, unknown>) => void
   patchEdge: (id: string, color: string) => void
   deleteWidget: (id: string) => void
@@ -61,6 +63,13 @@ export interface BoardState {
 
 /** Place new widgets on a gentle staircase so they do not stack exactly. */
 const spawnPoint = (n: number) => ({ x: 100 + (n % 8) * 40, y: 100 + (n % 8) * 30 })
+
+/** True when the selection points at a widget or yarn that exists, i.e. the widget dialog is actually open. */
+export const isDialogOpen = (s: Pick<BoardState, 'doc' | 'selection'>): boolean => {
+  const sel = s.selection
+  if (!sel) return false
+  return (sel.kind === 'widget' ? s.doc.widgets : s.doc.edges).some((x) => x.id === sel.id)
+}
 
 export const useBoard = create<BoardState>()((set, get) => ({
   title: SAMPLE_TITLE,
@@ -110,6 +119,10 @@ export const useBoard = create<BoardState>()((set, get) => ({
   },
 
   moveBy: (id, dx, dy) => set((s) => ({ doc: moveWidget(s.doc, id, dx, dy) })),
+  resizeTo: (id, w, h) => set((s) => {
+    const doc = resizeWidget(s.doc, id, w, h)
+    return doc === s.doc ? s : { doc }
+  }),
   patchWidget: (id, patch) =>
     set((s) => {
       const doc = patchWidget(s.doc, id, patch)

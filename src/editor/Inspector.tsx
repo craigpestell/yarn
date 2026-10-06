@@ -1,31 +1,44 @@
-import { LIMITS, type Widget, type WidgetType } from '../../shared/schema'
+import { Button } from '@/components/ui/button'
+import { Input, Select, Textarea } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { LIMITS, type Widget } from '../../shared/schema'
 import { WidgetLinkEditor } from '../links/WidgetLinkEditor'
 import { widgetLabel } from './docOps'
+import { FIELDS, STATUSES } from './fields'
+import { RESIZE_RULES } from './geometry'
 import { SourcesEditor } from './SourcesEditor'
 import { useBoard } from './store'
 
-interface Field {
-  key: string
-  label: string
-  max: number
-  multiline?: boolean
+/** Keyboard route to resizing: width always, height only where it is not tied to the width. */
+function SizeFields({ w }: { w: Extract<Widget, { type: 'photo' | 'paper' }> }) {
+  const resizeTo = useBoard((s) => s.resizeTo)
+  const rule = RESIZE_RULES[w.type]
+  const num = (v: string) => (v === '' ? NaN : Number(v))
+  return (
+    <>
+      <Label>
+        Width
+        <Input
+          type="number"
+          min={rule.minW}
+          max={LIMITS.maxSize}
+          value={w.w}
+          disabled={w.locked === true}
+          onChange={(e) => {
+            const nw = num(e.target.value)
+            resizeTo(w.id, nw, rule.keepAspect ? nw * (w.h / w.w) : w.h)
+          }}
+        />
+      </Label>
+      {!rule.keepAspect && (
+        <Label>
+          Height
+          <Input type="number" min={rule.minH} max={LIMITS.maxSize} value={w.h} disabled={w.locked === true} onChange={(e) => resizeTo(w.id, w.w, num(e.target.value))} />
+        </Label>
+      )}
+    </>
+  )
 }
-const FIELDS: Record<WidgetType, Field[]> = {
-  photo: [
-    { key: 'title', label: 'Title', max: LIMITS.photoTitle },
-    { key: 'caption', label: 'Caption', max: LIMITS.caption, multiline: true },
-  ],
-  note: [{ key: 'text', label: 'Text', max: LIMITS.noteText, multiline: true }],
-  wanted: [
-    { key: 'name', label: 'Name', max: LIMITS.short },
-    { key: 'alias', label: 'Alias', max: LIMITS.short },
-    { key: 'crime', label: 'Crime', max: LIMITS.short },
-    { key: 'description', label: 'Description', max: LIMITS.description, multiline: true },
-    { key: 'reward', label: 'Reward', max: LIMITS.short },
-  ],
-  paper: [{ key: 'content', label: 'Content', max: LIMITS.paperContent, multiline: true }],
-}
-const STATUSES = ['claim', 'disputed', 'verified', 'speculation'] as const
 
 function WidgetFields({ w }: { w: Widget }) {
   const patch = useBoard((s) => s.patchWidget)
@@ -34,45 +47,45 @@ function WidgetFields({ w }: { w: Widget }) {
   return (
     <>
       {FIELDS[w.type].map((f) => (
-        <label key={f.key} className="field">
+        <Label key={f.key}>
           {f.label}
           {f.multiline ? (
-            <textarea rows={4} maxLength={f.max} value={text(f.key)} onChange={(e) => patch(w.id, { data: { [f.key]: e.target.value } })} />
+            <Textarea rows={4} maxLength={f.max} value={text(f.key)} onChange={(e) => patch(w.id, { data: { [f.key]: e.target.value } })} />
           ) : (
-            <input type="text" maxLength={f.max} value={text(f.key)} onChange={(e) => patch(w.id, { data: { [f.key]: e.target.value } })} />
+            <Input type="text" maxLength={f.max} value={text(f.key)} onChange={(e) => patch(w.id, { data: { [f.key]: e.target.value } })} />
           )}
-        </label>
+        </Label>
       ))}
       {w.type === 'note' && (
-        <label className="field">
+        <Label>
           Color
-          <input type="color" value={w.data.color} onChange={(e) => patch(w.id, { data: { color: e.target.value } })} />
-        </label>
+          <Input type="color" value={w.data.color} onChange={(e) => patch(w.id, { data: { color: e.target.value } })} />
+        </Label>
       )}
-      <label className="field">
+      {(w.type === 'photo' || w.type === 'paper') && <SizeFields w={w} />}
+      <Label>
         Status
-        <select value={w.status ?? ''} onChange={(e) => patch(w.id, { status: e.target.value || undefined })}>
+        <Select value={w.status ?? ''} onChange={(e) => patch(w.id, { status: e.target.value || undefined })}>
           <option value="">None</option>
           {STATUSES.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
-        </select>
-      </label>
-      <label className="field inline">
-        <input type="checkbox" checked={w.locked === true} onChange={(e) => patch(w.id, { locked: e.target.checked })} />
+        </Select>
+      </Label>
+      <Label inline>
+        <Input type="checkbox" checked={w.locked === true} onChange={(e) => patch(w.id, { locked: e.target.checked })} />
         Locked (cannot be moved)
-      </label>
+      </Label>
       <SourcesEditor widget={w} />
       <WidgetLinkEditor widgetId={w.id} />
     </>
   )
 }
 
-/** The single, generic inspector: edits whatever is selected, driven by the field table above. */
+/** The edit part of the widget dialog, driven by the field table. Renders standalone (no modal, heading or close). */
 export function Inspector() {
   const selection = useBoard((s) => s.selection)
   const doc = useBoard((s) => s.doc)
-  const select = useBoard((s) => s.select)
   const deleteWidget = useBoard((s) => s.deleteWidget)
   const deleteEdge = useBoard((s) => s.deleteEdge)
   const patchEdge = useBoard((s) => s.patchEdge)
@@ -88,32 +101,25 @@ export function Inspector() {
   }
 
   return (
-    <aside className="inspector" aria-label="Inspector">
-      <div className="inspector-head">
-        <h2>{widget ? widgetLabel(widget) : 'Yarn'}</h2>
-        <button type="button" onClick={() => {
-          select(null)
-          requestFocus(selection.id)
-        }}>Close</button>
-      </div>
+    <div className="tw flex flex-col gap-2.5 text-foreground" data-edit-part>
       {widget && <WidgetFields w={widget} />}
-      {widget && <button type="button" className="danger" onClick={() => {
+      {widget && <Button variant="destructive" onClick={() => {
         requestFocus('canvas')
         deleteWidget(widget.id)
-      }}>Delete widget</button>}
+      }}>Delete widget</Button>}
       {edge && (
         <>
           <p>{name(edge.source)} to {name(edge.target)}</p>
-          <label className="field">
+          <Label>
             Yarn color
-            <input type="color" value={edge.color.length === 7 ? edge.color : '#e53e3e'} onChange={(e) => patchEdge(edge.id, e.target.value)} />
-          </label>
-          <button type="button" className="danger" onClick={() => {
+            <Input type="color" value={edge.color.length === 7 ? edge.color : '#e53e3e'} onChange={(e) => patchEdge(edge.id, e.target.value)} />
+          </Label>
+          <Button variant="destructive" onClick={() => {
             requestFocus('canvas')
             deleteEdge(edge.id)
-          }}>Delete yarn</button>
+          }}>Delete yarn</Button>
         </>
       )}
-    </aside>
+    </div>
   )
 }

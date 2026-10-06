@@ -36,6 +36,7 @@ export function NavBar() {
         <Link to={user ? '/boards' : '/'} className="site-brand">Yarns</Link>
         {user && <Link to="/boards">My boards</Link>}
         <Link to="/topics">Topics</Link>
+        <Link to="/explore">Explore</Link>
         {user ? (
           <>
             <Link to="/account">Account</Link>

@@ -1,5 +1,6 @@
 import { customAlphabet } from 'nanoid'
 import { LIMITS, WidgetSchema, type Doc, type Edge, type Widget, type WidgetType } from '../../shared/schema'
+import { isResizable, RESIZE_RULES } from './geometry'
 
 const newId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 12)
 export const makeId = (): string => newId()
@@ -94,6 +95,17 @@ export const patchEdge = (doc: Doc, id: string, patch: Partial<Pick<Edge, 'color
   ...doc,
   edges: doc.edges.map((e) => (e.id === id ? { ...e, ...patch } : e)),
 })
+
+/** Set a widget's size, clamped to its type's limits. Locked and non-resizable widgets are unchanged. */
+export function resizeWidget(doc: Doc, id: string, w: number, h: number): Doc {
+  const target = doc.widgets.find((x) => x.id === id)
+  if (!target || target.locked || !isResizable(target.type) || !Number.isFinite(w) || !Number.isFinite(h)) return doc
+  const rule = RESIZE_RULES[target.type]
+  const nw = Math.min(LIMITS.maxSize, Math.max(rule.minW, Math.round(w)))
+  const nh = Math.min(LIMITS.maxSize, Math.max(rule.minH, Math.round(h)))
+  if (nw === target.w && nh === target.h) return doc
+  return { ...doc, widgets: doc.widgets.map((x) => (x.id === id ? { ...x, w: nw, h: nh } : x)) }
+}
 
 const clip = (s: string, n = 40) => (s.length > n ? `${s.slice(0, n)}...` : s)
 export function widgetLabel(w: Widget): string {

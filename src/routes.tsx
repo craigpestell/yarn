@@ -4,6 +4,7 @@ import { RequireAuth } from './auth/RequireAuth'
 import { AccountPage } from './pages/AccountPage'
 import { BoardsPage } from './pages/BoardsPage'
 import { EditorPage } from './pages/EditorPage'
+import { ExplorePage } from './pages/ExplorePage'
 import { ReaderPage } from './pages/ReaderPage'
 import { TopicPage } from './pages/TopicPage'
 import { TopicsPage } from './pages/TopicsPage'
@@ -28,6 +29,7 @@ export const routeObjects: RouteObject[] = [
       { path: '/b/:slug', element: <ReaderPage /> },
       { path: '/privacy', element: <PrivacyPage /> },
       { path: '/terms', element: <TermsPage /> },
+      { path: '/explore', element: <ExplorePage /> },
       { path: '/topics', element: <TopicsPage /> },
       { path: '/topics/:slug', element: <TopicPage /> },
       { path: '*', element: <main className="page"><h1>Not found</h1><a href="/">Home</a></main> },

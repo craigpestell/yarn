@@ -90,6 +90,7 @@ describe('widget link editor (inspector)', () => {
 })
 
 describe('link chip on widgets', () => {
+  beforeEach(() => useBoard.getState().select(null))
   it('shows an open link, records the breadcrumb on click, and an unavailable placeholder without a title', async () => {
     const s = stub()
     const links: LinkView[] = [

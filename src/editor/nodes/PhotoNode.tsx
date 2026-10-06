@@ -4,7 +4,7 @@ import { Frame, type WidgetNodeProps } from './Frame'
 function PhotoArt() {
   const gid = useId()
   return (
-    <svg width="140" height="140" viewBox="0 0 140 140" aria-hidden="true" focusable="false">
+    <svg width="100%" height="100%" viewBox="0 0 140 140" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#bfdbfe" />

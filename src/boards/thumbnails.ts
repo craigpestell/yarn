@@ -24,6 +24,20 @@ export async function removePublishedThumbnail(client: SupabaseClient, ownerId: 
   }
 }
 
+/**
+ * Best effort: remove both thumbnails (live and published) of boards that were just deleted. Never throws and
+ * never reports: remove() can succeed while deleting nothing under Storage RLS, so the result is not verified.
+ */
+export async function removeBoardThumbnails(client: SupabaseClient, ownerId: string, boardIds: string[]): Promise<void> {
+  if (boardIds.length === 0) return
+  try {
+    const paths = boardIds.flatMap((id) => [thumbnailPath(ownerId, id), publishedThumbnailPath(ownerId, id)])
+    await client.storage.from(THUMB_BUCKET).remove(paths)
+  } catch {
+    // ignore: the board rows are gone, so the files are unreachable orphans at worst
+  }
+}
+
 export async function uploadThumbnail(client: SupabaseClient, ownerId: string, boardId: string, png: Blob): Promise<void> {
   const { error } = await client.storage
     .from(THUMB_BUCKET)
@@ -31,7 +45,7 @@ export async function uploadThumbnail(client: SupabaseClient, ownerId: string, b
   if (error) throw new Error(error.message)
 }
 
-const SignedSchema = z.array(z.object({ path: z.string().nullable(), signedUrl: z.string().optional() }))
+const SignedSchema = z.array(z.object({ path: z.string().nullable(), signedUrl: z.string().nullish() }))
 
 /** Signed URLs (1 hour) for the given boards; boards without a thumbnail are simply absent from the map. */
 export async function thumbnailUrls(client: SupabaseClient, ownerId: string, boardIds: string[]): Promise<Map<string, string>> {
@@ -40,7 +54,9 @@ export async function thumbnailUrls(client: SupabaseClient, ownerId: string, boa
   const paths = boardIds.map((id) => thumbnailPath(ownerId, id))
   const { data, error } = await client.storage.from(THUMB_BUCKET).createSignedUrls(paths, 3600)
   if (error) return out
-  const rows = SignedSchema.parse(data)
+  const parsed = SignedSchema.safeParse(data)
+  if (!parsed.success) return out
+  const rows = parsed.data
   rows.forEach((r, i) => {
     const id = boardIds[i]
     if (id && r.path && r.signedUrl) out.set(id, r.signedUrl)

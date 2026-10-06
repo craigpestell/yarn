@@ -20,7 +20,12 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
   },
   "include": [
     "shared",

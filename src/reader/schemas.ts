@@ -30,3 +30,8 @@ export interface ReaderBoard {
   doc: z.infer<typeof DocSchema>
   isOwner: boolean
 }
+
+/** get_fork_source: no row = not a fork; null slug and title = the source is not readable by the caller (never a title leak). */
+export const ForkSourceRowSchema = z.object({ source_slug: SlugSchema.nullable(), source_title: z.string().nullable() })
+
+export type ForkSource = { kind: 'unavailable' } | { kind: 'available'; slug: string; title: string }
