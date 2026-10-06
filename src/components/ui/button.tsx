@@ -7,7 +7,7 @@ const TAPE = 'bg-primary text-primary-foreground border-tape-edge shadow-[inset_
 
 // No focus-visible styling here: the single global :focus-visible outline in styles.css applies.
 const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-[3px] border px-2.5 py-1 font-semibold tracking-wide cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed',
+  'inline-flex items-center justify-center gap-1.5 rounded-[3px] border px-2.5 py-1 font-semibold tracking-wide cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed',
   {
     variants: {
       variant: {

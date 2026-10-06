@@ -2,12 +2,20 @@ import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'r
 import { Button } from '@/components/ui/button'
 import { WIDGET_TYPES, type WidgetType } from '../../shared/schema'
 import { useBoard } from './store'
+import { DownloadIcon, LayoutIcon, LinkIcon, NoteIcon, PaperIcon, PhotoIcon, PlusIcon, TransferIcon, UploadIcon, WantedIcon } from './icons'
 
 const ADD_LABEL: Record<WidgetType, string> = {
   photo: 'Add photo',
   note: 'Add note',
   wanted: 'Add wanted poster',
   paper: 'Add paper',
+}
+
+const ADD_ICON: Record<WidgetType, ReactNode> = {
+  photo: <PhotoIcon />,
+  note: <NoteIcon />,
+  wanted: <WantedIcon />,
+  paper: <PaperIcon />,
 }
 
 export function download(name: string, text: string) {
@@ -20,7 +28,7 @@ export function download(name: string, text: string) {
 }
 
 /** A button that opens a small list of actions; closes on pick, outside click or Escape. */
-function Menu({ label, children }: { label: string; children: (close: () => void) => ReactNode }) {
+function Menu({ label, icon, children }: { label: string; icon: ReactNode; children: (close: () => void) => ReactNode }) {
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -36,7 +44,7 @@ function Menu({ label, children }: { label: string; children: (close: () => void
   }, [open])
   return (
     <div className="relative" ref={root}>
-      <Button aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{label} ▾</Button>
+      <Button aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{icon}{label} ▾</Button>
       {open && <div role="menu" className="absolute left-0 top-[calc(100%+4px)] z-20 flex min-w-44 flex-col gap-1 rounded-[3px] border-2 border-border bg-background p-1.5 shadow-[0_6px_18px_rgba(0,0,0,0.3)]">{children(() => setOpen(false))}</div>}
     </div>
   )
@@ -59,22 +67,22 @@ export function Toolbar() {
 
   return (
     <div className="tw flex flex-wrap items-center gap-1.5" role="toolbar" aria-label="Board tools">
-      <Menu label="Add">
+      <Menu label="Add" icon={<PlusIcon />}>
         {(close) => WIDGET_TYPES.map((t) => (
-          <Button key={t} variant="menuitem" role="menuitem" onClick={() => { useBoard.getState().addWidget(t); close() }}>{ADD_LABEL[t]}</Button>
+          <Button key={t} variant="menuitem" role="menuitem" onClick={() => { useBoard.getState().addWidget(t); close() }}>{ADD_ICON[t]}{ADD_LABEL[t]}</Button>
         ))}
       </Menu>
       <Button variant="toggle" aria-pressed={connect.active} onClick={() => useBoard.getState().toggleConnectMode()}>
-        Connect yarn
+        <LinkIcon />Connect yarn
       </Button>
       <Button disabled={busy} className="disabled:cursor-progress" onClick={() => void organize()}>
-        {busy ? 'Organizing...' : 'Auto-organize'}
+        <LayoutIcon />{busy ? 'Organizing...' : 'Auto-organize'}
       </Button>
-      <Menu label="Import / export">
+      <Menu label="Import / export" icon={<TransferIcon />}>
         {(close) => (
           <>
-            <Button variant="menuitem" role="menuitem" onClick={() => { download('board.json', useBoard.getState().exportJson()); close() }}>Export JSON</Button>
-            <Button variant="menuitem" role="menuitem" onClick={() => { file.current?.click(); close() }}>Import JSON</Button>
+            <Button variant="menuitem" role="menuitem" onClick={() => { download('board.json', useBoard.getState().exportJson()); close() }}><DownloadIcon />Export JSON</Button>
+            <Button variant="menuitem" role="menuitem" onClick={() => { file.current?.click(); close() }}><UploadIcon />Import JSON</Button>
           </>
         )}
       </Menu>
