@@ -70,7 +70,7 @@ export function Toolbar() {
   }
 
   return (
-    <BaseToolbar.Root className="tw flex flex-wrap items-center gap-1.5" aria-label="Board tools">
+    <BaseToolbar.Root className="tw relative flex flex-wrap items-center gap-1.5" aria-label="Board tools">
       <Menu label="Add" icon={<PlusIcon />}>
         {(close) => WIDGET_TYPES.map((t) => (
           <Button key={t} variant="menuitem" role="menuitem" onClick={() => { useBoard.getState().addWidget(t); close() }}>{ADD_ICON[t]}{ADD_LABEL[t]}</Button>
@@ -92,7 +92,7 @@ export function Toolbar() {
       </Menu>
       <input ref={file} type="file" accept="application/json,.json" hidden aria-label="Import JSON file" onChange={(e) => void onImport(e)} />
       {connect.active && (
-        <span className="text-[0.9rem] text-amber-200" role="status">
+        <span className="absolute left-0 top-[calc(100%+4px)] z-10 whitespace-nowrap rounded-[3px] bg-[#33231a] px-2 py-0.5 text-[0.9rem] text-amber-200 shadow-[0_2px_6px_rgba(0,0,0,0.4)]" role="status">
           {connect.source ? 'Pick the target widget' : 'Pick the source widget'} (Esc cancels)
         </span>
       )}
