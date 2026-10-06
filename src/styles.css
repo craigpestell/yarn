@@ -9,6 +9,8 @@ body { font-family: system-ui, sans-serif; color: #1f2937; }
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 button, select, input, textarea { font: inherit; }
 .toolbar > button, .menu > button, .menu-list button, .inspector button, .error button { padding: 4px 10px; border-radius: 4px; border: 1px solid #78716c; background: #f5f5f4; color: #1c1917; cursor: pointer; }
+.toolbar > button, .menu > button, .menu-list button { display: inline-flex; align-items: center; gap: 6px; }
+.icon { flex: none; }
 .toolbar > button[aria-pressed='true'] { background: #22c55e; border-color: #15803d; }
 .toolbar > button:disabled { opacity: 0.6; cursor: progress; }
 .hint { color: #fde68a; font-size: 0.9rem; }
