@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
+import { Toolbar as BaseToolbar } from '@base-ui/react/toolbar'
 import { Button } from '@/components/ui/button'
 import { WIDGET_TYPES, type WidgetType } from '../../shared/schema'
 import { useBoard } from './store'
@@ -27,6 +28,9 @@ export function download(name: string, text: string) {
   URL.revokeObjectURL(url)
 }
 
+/** The popup renders inside the toolbar's DOM; keep its arrow keys from moving the toolbar's roving focus. */
+const keepArrowsInMenu = (e: ReactKeyboardEvent<HTMLElement>) => { if (e.key.startsWith('Arrow')) e.stopPropagation() }
+
 /** A button that opens a small list of actions; closes on pick, outside click or Escape. */
 function Menu({ label, icon, children }: { label: string; icon: ReactNode; children: (close: () => void) => ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -44,8 +48,8 @@ function Menu({ label, icon, children }: { label: string; icon: ReactNode; child
   }, [open])
   return (
     <div className="relative" ref={root}>
-      <Button aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{icon}{label} ▾</Button>
-      {open && <div role="menu" className="absolute left-0 top-[calc(100%+4px)] z-20 flex min-w-44 flex-col gap-1 rounded-[3px] border-2 border-border bg-background p-1.5 shadow-[0_6px_18px_rgba(0,0,0,0.3)]">{children(() => setOpen(false))}</div>}
+      <BaseToolbar.Button render={<Button />} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{icon}{label} ▾</BaseToolbar.Button>
+      {open && <div role="menu" onKeyDown={keepArrowsInMenu} className="absolute left-0 top-[calc(100%+4px)] z-20 flex min-w-44 flex-col gap-1 rounded-[3px] border-2 border-border bg-background p-1.5 shadow-[0_6px_18px_rgba(0,0,0,0.3)]">{children(() => setOpen(false))}</div>}
     </div>
   )
 }
@@ -66,18 +70,18 @@ export function Toolbar() {
   }
 
   return (
-    <div className="tw flex flex-wrap items-center gap-1.5" role="toolbar" aria-label="Board tools">
+    <BaseToolbar.Root className="tw flex flex-wrap items-center gap-1.5" aria-label="Board tools">
       <Menu label="Add" icon={<PlusIcon />}>
         {(close) => WIDGET_TYPES.map((t) => (
           <Button key={t} variant="menuitem" role="menuitem" onClick={() => { useBoard.getState().addWidget(t); close() }}>{ADD_ICON[t]}{ADD_LABEL[t]}</Button>
         ))}
       </Menu>
-      <Button variant="toggle" aria-pressed={connect.active} onClick={() => useBoard.getState().toggleConnectMode()}>
+      <BaseToolbar.Button render={<Button variant="toggle" />} aria-pressed={connect.active} onClick={() => useBoard.getState().toggleConnectMode()}>
         <LinkIcon />Connect yarn
-      </Button>
-      <Button disabled={busy} className="disabled:cursor-progress" onClick={() => void organize()}>
+      </BaseToolbar.Button>
+      <BaseToolbar.Button render={<Button className="data-[disabled]:cursor-progress data-[disabled]:opacity-60 data-[disabled]:hover:bg-primary" />} disabled={busy} onClick={() => void organize()}>
         <LayoutIcon />{busy ? 'Organizing...' : 'Auto-organize'}
-      </Button>
+      </BaseToolbar.Button>
       <Menu label="Import / export" icon={<TransferIcon />}>
         {(close) => (
           <>
@@ -92,6 +96,6 @@ export function Toolbar() {
           {connect.source ? 'Pick the target widget' : 'Pick the source widget'} (Esc cancels)
         </span>
       )}
-    </div>
+    </BaseToolbar.Root>
   )
 }
