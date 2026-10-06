@@ -48,8 +48,8 @@ function Menu({ label, icon, children }: { label: string; icon: ReactNode; child
   }, [open])
   return (
     <div className="relative" ref={root}>
-      <BaseToolbar.Button render={<Button />} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{icon}{label} ▾</BaseToolbar.Button>
-      {open && <div role="menu" onKeyDown={keepArrowsInMenu} className="absolute left-0 top-[calc(100%+4px)] z-20 flex min-w-44 flex-col gap-1 rounded-[3px] border-2 border-border bg-background p-1.5 shadow-[0_6px_18px_rgba(0,0,0,0.3)]">{children(() => setOpen(false))}</div>}
+      <BaseToolbar.Button render={<Button className="aria-expanded:bg-primary-hover" />} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{icon}{label} ▾</BaseToolbar.Button>
+      {open && <div role="menu" onKeyDown={keepArrowsInMenu} className="absolute left-0 top-[calc(100%+6px)] z-20 flex min-w-44 flex-col gap-0.5 rounded-[4px] border border-tape-edge bg-[#33231a] p-1 shadow-[0_8px_24px_rgba(0,0,0,0.45)]">{children(() => setOpen(false))}</div>}
     </div>
   )
 }

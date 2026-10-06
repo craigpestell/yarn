@@ -14,7 +14,7 @@ const buttonVariants = cva(
         default: TAPE,
         destructive: 'bg-transparent text-destructive-foreground border-2 border-destructive font-bold enabled:hover:bg-destructive-soft',
         toggle: `${TAPE} aria-pressed:bg-yarn aria-pressed:border-yarn-edge aria-pressed:enabled:hover:bg-yarn`,
-        menuitem: `w-full justify-start text-left ${TAPE}`,
+        menuitem: 'w-full justify-start gap-2.5 whitespace-nowrap rounded-[2px] border-transparent bg-transparent px-3 py-2 text-left font-medium text-primary-foreground enabled:hover:bg-white/10',
       },
     },
     defaultVariants: { variant: 'default' },
